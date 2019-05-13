@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yetx.dao.CommentMapper" >
+  <resultMap id="BaseResultMap" type="com.yetx.pojo.Comment" >
+    <constructor >
+      <idArg column="id" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="from_uid" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="to_uid" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="like_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="parent_id" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="parent_type" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="create_time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
+    </constructor>
+  </resultMap>
+  <resultMap id="ResultMapWithBLOBs" type="com.yetx.pojo.Comment" >
+    <constructor >
+      <idArg column="id" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="from_uid" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="to_uid" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="like_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="parent_id" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="parent_type" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="create_time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
+      <arg column="content" jdbcType="LONGVARCHAR" javaType="java.lang.String" />
+    </constructor>
+  </resultMap>
+
+
+  <resultMap id="CommentVOResultMap" type="com.yetx.vo.CommentVO" >
+    <id column="id" property="id" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    <result column="from_uid" property="fromUid" jdbcType="VARCHAR" javaType="java.lang.String" />
+    <!--<result column="to_uid" property="toUid" jdbcType="VARCHAR" javaType="java.lang.String"/>-->
+    <result column="from_nickname1" property="fromNickname" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    <result column="content" property="content" jdbcType="LONGVARCHAR" javaType="java.lang.String" />
+    <result column="like_counts" property="likeCounts" jdbcType="INTEGER" javaType="java.lang.Integer" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" javaType="java.util.Date"/>
+    <!--<collection property="subComments" ofType="com.yetx.pojo.Comment" >-->
+    <collection property="subComments" ofType="com.yetx.vo.SubCommentVO" >
+      <id column="id2" property="id" jdbcType="VARCHAR" javaType="java.lang.String"/>
+      <result column="from_uid2" property="fromUid" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <result column="to_uid2" property="toUid" jdbcType="VARCHAR" javaType="java.lang.String"/>
+      <result column="content2" property="content" jdbcType="LONGVARCHAR" javaType="java.lang.String" />
+      <result column="like_counts2" property="likeCounts" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <result column="create_time2" property="createTime" jdbcType="TIMESTAMP" javaType="java.util.Date"/>
+      <result column="from_nickname2" property="fromNickname" jdbcType="VARCHAR" javaType="java.lang.String"/>
+      <result column="to_nickname2" property="toNickname" jdbcType="VARCHAR" javaType="java.lang.String"/>
+
+      <!--<result column="parent_type2" property="parentType" jdbcType="INTEGER" javaType="java.lang.Integer" />-->
+      <!--<result column="parent_id2" property="parentId" jdbcType="VARCHAR" javaType="java.lang.String" />-->
+    </collection>
+  </resultMap>
+
+  <sql id="Base_Column_List" >
+    id, from_uid, to_uid, like_counts, parent_id, parent_type, create_time
+  </sql>
+  <sql id="Blob_Column_List" >
+    content
+  </sql>
+
+  <select id="selectCommentsvoByArticleId" resultMap="CommentVOResultMap" parameterType="java.lang.String">
+
+    select c1.id,c1.from_uid,c1.content,c1.like_counts,c1.create_time,u1.nickname as from_nickname1,
+    c2.id as id2,c2.from_uid as from_uid2,c2.to_uid as to_uid2,c2.content as content2,c2.like_counts as like_counts2,c2.create_time as create_time2,
+    u2.nickname as from_nickname2,u3.nickname as to_nickname2
+    from comment c1
+    left join comment c2 on c2.parent_id=c1.id and c2.parent_type=1
+    left join user u1 on u1.id=c1.from_uid
+    left join user u2 on u2.id=c2.from_uid
+    left join user u3 on u3.id=c2.to_uid
+    where c1.parent_type=2 and c1.parent_id=#{acticleId};
+
+  </select>
+  <select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from comment
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from comment
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.yetx.pojo.Comment" >
+    insert into comment (id, from_uid, to_uid, 
+      like_counts, parent_id, parent_type, 
+      create_time, content)
+    values (#{id,jdbcType=VARCHAR}, #{fromUid,jdbcType=VARCHAR}, #{toUid,jdbcType=VARCHAR}, 
+      #{likeCounts,jdbcType=INTEGER}, #{parentId,jdbcType=VARCHAR}, #{parentType,jdbcType=INTEGER}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{content,jdbcType=LONGVARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.yetx.pojo.Comment" >
+    insert into comment
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="fromUid != null" >
+        from_uid,
+      </if>
+      <if test="toUid != null" >
+        to_uid,
+      </if>
+      <if test="likeCounts != null" >
+        like_counts,
+      </if>
+      <if test="parentId != null" >
+        parent_id,
+      </if>
+      <if test="parentType != null" >
+        parent_type,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="content != null" >
+        content,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="fromUid != null" >
+        #{fromUid,jdbcType=VARCHAR},
+      </if>
+      <if test="toUid != null" >
+        #{toUid,jdbcType=VARCHAR},
+      </if>
+      <if test="likeCounts != null" >
+        #{likeCounts,jdbcType=INTEGER},
+      </if>
+      <if test="parentId != null" >
+        #{parentId,jdbcType=VARCHAR},
+      </if>
+      <if test="parentType != null" >
+        #{parentType,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="content != null" >
+        #{content,jdbcType=LONGVARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.yetx.pojo.Comment" >
+    update comment
+    <set >
+      <if test="fromUid != null" >
+        from_uid = #{fromUid,jdbcType=VARCHAR},
+      </if>
+      <if test="toUid != null" >
+        to_uid = #{toUid,jdbcType=VARCHAR},
+      </if>
+      <if test="likeCounts != null" >
+        like_counts = #{likeCounts,jdbcType=INTEGER},
+      </if>
+      <if test="parentId != null" >
+        parent_id = #{parentId,jdbcType=VARCHAR},
+      </if>
+      <if test="parentType != null" >
+        parent_type = #{parentType,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="content != null" >
+        content = #{content,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.yetx.pojo.Comment" >
+    update comment
+    set from_uid = #{fromUid,jdbcType=VARCHAR},
+      to_uid = #{toUid,jdbcType=VARCHAR},
+      like_counts = #{likeCounts,jdbcType=INTEGER},
+      parent_id = #{parentId,jdbcType=VARCHAR},
+      parent_type = #{parentType,jdbcType=INTEGER},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      content = #{content,jdbcType=LONGVARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.yetx.pojo.Comment" >
+    update comment
+    set from_uid = #{fromUid,jdbcType=VARCHAR},
+      to_uid = #{toUid,jdbcType=VARCHAR},
+      like_counts = #{likeCounts,jdbcType=INTEGER},
+      parent_id = #{parentId,jdbcType=VARCHAR},
+      parent_type = #{parentType,jdbcType=INTEGER},
+      create_time = #{createTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

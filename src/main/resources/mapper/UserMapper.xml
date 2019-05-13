@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yetx.dao.UserMapper" >
+  <resultMap id="BaseResultMap" type="com.yetx.pojo.User" >
+    <constructor >
+      <idArg column="id" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="openid" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="nickname" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="avatar" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="follow_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="fans_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="collect_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="like_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="create_time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
+    </constructor>
+  </resultMap>
+
+
+  <!--<resultMap id="UserDTOMap" type="com.yetx.dto.UserDTO">-->
+    <!--<id column="id" property="id" jdbcType="VARCHAR" javaType="java.lang.String"/>-->
+    <!--<result column="openid"  property="openid" jdbcType="VARCHAR" javaType="java.lang.String"/>-->
+    <!--<result column="nickname" property="nickname" jdbcType="VARCHAR" javaType="java.lang.String"/>-->
+    <!--<result column="avatar" property="avatar" jdbcType="VARCHAR" javaType="java.lang.String"/>-->
+    <!--<result column="follow_counts" property="followCounts" jdbcType="INTEGER" javaType="java.lang.Integer"/>-->
+    <!--<result column="fans_counts" property="fansCounts" jdbcType="INTEGER" javaType="java.lang.Integer"/>-->
+    <!--<result column="collect_counts" property="collectCounts" jdbcType="INTEGER" javaType="java.lang.Integer"/>-->
+    <!--<result column="like_counts" property="likeCounts" jdbcType="INTEGER" javaType="java.lang.Integer"/>-->
+    <!--<result column="create_time" property="createTime" jdbcType="TIMESTAMP" javaType="java.util.Date"/>-->
+    <!--<collection property="articles" ofType="com.yetx.pojo.Article" >-->
+      <!--<id column="a_id"  property="id" jdbcType="VARCHAR"/>-->
+      <!--<result column="openid" property="openid" jdbcType="VARCHAR" javaType="java.lang.String"/>-->
+      <!--<result column="title"  property="title" jdbcType="VARCHAR" javaType="java.lang.String"/>-->
+      <!--<result column="cover"  property="cover" jdbcType="VARCHAR" javaType="java.lang.String"/>-->
+      <!--<result column="status" property="status" jdbcType="INTEGER" javaType="java.lang.Integer"/>-->
+      <!--<result column="like_counts" property="likeCounts" jdbcType="INTEGER" javaType="java.lang.Integer"/>-->
+      <!--<result column="collect_counts" property="collectCounts" jdbcType="INTEGER" javaType="java.lang.Integer"/>-->
+      <!--<result column="create_time" property="createTime" jdbcType="TIMESTAMP" javaType="java.util.Date"/>-->
+      <!--<result column="content" property="content" jdbcType="VARCHAR" javaType="java.lang.String"/>-->
+    <!--</collection>-->
+    <!--<collection property="questions" ofType="com.yetx.pojo.Question" >-->
+      <!--<id column="q_id"  property="id" jdbcType="VARCHAR"/>-->
+      <!--<result column="openid" property="openid" jdbcType="VARCHAR" javaType="java.lang.String"/>-->
+      <!--<result column="title"  property="title" jdbcType="VARCHAR" javaType="java.lang.String"/>-->
+      <!--<result column="focus_counts" property="focusCounts" jdbcType="INTEGER" javaType="java.lang.Integer"/>-->
+      <!--<result column="create_time" property="createTime" jdbcType="TIMESTAMP" javaType="java.util.Date"/>-->
+      <!--<result column="content" property="content" jdbcType="VARCHAR" javaType="java.lang.String"/>-->
+    <!--</collection>-->
+    <!--<collection property="answers" ofType="com.yetx.pojo.Answer" >-->
+      <!--<id column="ans_id"  property="id" jdbcType="VARCHAR"/>-->
+      <!--<result column="openid" property="openid" jdbcType="VARCHAR" javaType="java.lang.String"/>-->
+      <!--<result column="question_id" property="questionId" jdbcType="VARCHAR" javaType="java.lang.String"/>-->
+      <!--<result column="like_counts" property="likeCounts" jdbcType="INTEGER" javaType="java.lang.Integer"/>-->
+      <!--<result column="comment_counts" property="commentCounts" jdbcType="INTEGER" javaType="java.lang.Integer"/>-->
+      <!--<result column="create_time" property="createTime" jdbcType="TIMESTAMP" javaType="java.util.Date"/>-->
+      <!--<result column="content" property="content" jdbcType="VARCHAR" javaType="java.lang.String"/>-->
+    <!--</collection>-->
+  <!--</resultMap>-->
+  <resultMap id="UserFanDTOMap" type="com.yetx.dto.UserDTO">
+    <id column="id" property="id" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    <result column="openid"  property="openid" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    <result column="nickname" property="nickname" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    <result column="avatar" property="avatar" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    <result column="follow_counts" property="followCounts" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+    <result column="fans_counts" property="fansCounts" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+    <result column="collect_counts" property="collectCounts" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+    <result column="like_counts" property="likeCounts" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" javaType="java.util.Date"/>
+    <collection property="followUsers" ofType="com.yetx.dto.OtherUserDTO" >
+      <id column="other_id"  property="id" jdbcType="VARCHAR"/>
+      <id column="other_avatar"  property="avatar" jdbcType="VARCHAR"/>
+      <id column="other_name"  property="nickname" jdbcType="VARCHAR"/>
+    </collection>
+
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, openid, nickname,avatar,follow_counts,fans_counts,collect_counts,like_counts,create_time
+  </sql>
+
+  <select id="selectByOpenid" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select
+    <include refid="Base_Column_List" />
+    from user
+    where openid = #{openid,jdbcType=VARCHAR}
+  </select>
+
+  <select id="selectFollowsByOpenid" resultMap="UserFanDTOMap" parameterType="java.lang.String">
+    select u.*,uf.user_id,u2.id other_id,u2.avatar other_avatar,u2.nickname other_name<!--u2.follow_counts other_follow_counts,u2.-->
+    from (user u,user u2) left join user_fan uf on u.id=uf.fan_id
+    where u.openid=#{openid,jdbcType=VARCHAR} and u2.id=uf.user_id;
+  </select>
+
+  <!--<select id="selectAllArticleByOpenid" resultMap="UserDTOMap" parameterType="java.lang.String" >-->
+    <!--select-->
+    <!--u.*,a.id a_id,a.openid,a.title,a.cover,a.status,a.like_counts,a.collect_counts,a.create_time,a.content-->
+    <!--from user u-->
+    <!--left join article a-->
+    <!--on u.openid = a.openid-->
+    <!--where u.openid =  #{openid,jdbcType=VARCHAR}-->
+  <!--</select>-->
+  <!--<select id="selectAllQuestionByOpenid" resultMap="UserDTOMap" parameterType="java.lang.String" >-->
+    <!--select-->
+    <!--u.*,q.id q_id,q.openid,q.title,q.focus_counts,q.create_time,q.content-->
+    <!--from user u-->
+    <!--left join question q-->
+    <!--on u.openid = q.openid-->
+    <!--where u.openid =  #{openid,jdbcType=VARCHAR}-->
+  <!--</select>-->
+  <!--<select id="selectAllAnswerByOpenid" resultMap="UserDTOMap" parameterType="java.lang.String" >-->
+    <!--select-->
+    <!--u.*,a.id ans_id,a.openid,a.question_id,a.like_counts,a.comment_counts,a.create_time,a.content-->
+    <!--from user u-->
+    <!--left join answer a-->
+    <!--on u.openid = a.openid-->
+    <!--where u.openid =  #{openid,jdbcType=VARCHAR}-->
+  <!--</select>-->
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from user
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from user
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.yetx.pojo.User" >
+    insert into user (id, openid, nickname, 
+      avatar, follow_counts, fans_counts, 
+      collect_counts, like_counts, create_time
+      )
+    values (#{id,jdbcType=VARCHAR}, #{openid,jdbcType=VARCHAR}, #{nickname,jdbcType=VARCHAR}, 
+      #{avatar,jdbcType=VARCHAR}, #{followCounts,jdbcType=INTEGER}, #{fansCounts,jdbcType=INTEGER}, 
+      #{collectCounts,jdbcType=INTEGER}, #{likeCounts,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.yetx.pojo.User" >
+    insert into user
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="openid != null" >
+        openid,
+      </if>
+      <if test="nickname != null" >
+        nickname,
+      </if>
+      <if test="avatar != null" >
+        avatar,
+      </if>
+      <if test="followCounts != null" >
+        follow_counts,
+      </if>
+      <if test="fansCounts != null" >
+        fans_counts,
+      </if>
+      <if test="collectCounts != null" >
+        collect_counts,
+      </if>
+      <if test="likeCounts != null" >
+        like_counts,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="openid != null" >
+        #{openid,jdbcType=VARCHAR},
+      </if>
+      <if test="nickname != null" >
+        #{nickname,jdbcType=VARCHAR},
+      </if>
+      <if test="avatar != null" >
+        #{avatar,jdbcType=VARCHAR},
+      </if>
+      <if test="followCounts != null" >
+        #{followCounts,jdbcType=INTEGER},
+      </if>
+      <if test="fansCounts != null" >
+        #{fansCounts,jdbcType=INTEGER},
+      </if>
+      <if test="collectCounts != null" >
+        #{collectCounts,jdbcType=INTEGER},
+      </if>
+      <if test="likeCounts != null" >
+        #{likeCounts,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.yetx.pojo.User" >
+    update user
+    <set >
+      <if test="openid != null" >
+        openid = #{openid,jdbcType=VARCHAR},
+      </if>
+      <if test="nickname != null" >
+        nickname = #{nickname,jdbcType=VARCHAR},
+      </if>
+      <if test="avatar != null" >
+        avatar = #{avatar,jdbcType=VARCHAR},
+      </if>
+      <if test="followCounts != null" >
+        follow_counts = #{followCounts,jdbcType=INTEGER},
+      </if>
+      <if test="fansCounts != null" >
+        fans_counts = #{fansCounts,jdbcType=INTEGER},
+      </if>
+      <if test="collectCounts != null" >
+        collect_counts = #{collectCounts,jdbcType=INTEGER},
+      </if>
+      <if test="likeCounts != null" >
+        like_counts = #{likeCounts,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.yetx.pojo.User" >
+    update user
+    set openid = #{openid,jdbcType=VARCHAR},
+      nickname = #{nickname,jdbcType=VARCHAR},
+      avatar = #{avatar,jdbcType=VARCHAR},
+      follow_counts = #{followCounts,jdbcType=INTEGER},
+      fans_counts = #{fansCounts,jdbcType=INTEGER},
+      collect_counts = #{collectCounts,jdbcType=INTEGER},
+      like_counts = #{likeCounts,jdbcType=INTEGER},
+      create_time = #{createTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

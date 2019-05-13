@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yetx.dao.ArticleMapper" >
+  <resultMap id="BaseResultMap" type="com.yetx.pojo.Article" >
+    <constructor >
+      <idArg column="id" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="openid" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="title" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="cover" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="status" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="like_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="collect_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="create_time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
+    </constructor>
+  </resultMap>
+  <resultMap id="ResultMapWithBLOBs" type="com.yetx.pojo.Article" >
+    <constructor >
+      <idArg column="id" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="openid" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="title" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="cover" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="status" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="like_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="collect_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="create_time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
+      <arg column="content" jdbcType="LONGVARCHAR" javaType="java.lang.String" />
+    </constructor>
+  </resultMap>
+    
+    <resultMap id="ArticleVOMap" type="com.yetx.vo.ArticleVO">
+        <id column="id" property="id" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="title" property="title" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="cover" property="cover" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="content" property="content" jdbcType="LONGVARCHAR" javaType="java.lang.String" />
+        <result column="status" property="status" jdbcType="INTEGER" javaType="java.lang.Integer" />
+        <result column="like_counts" property="likeCounts" jdbcType="INTEGER" javaType="java.lang.Integer" />
+        <result column="collect_counts" property="collectCounts" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" javaType="java.util.Date"/>
+
+        <result column="nickname" property="nickname" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result column="avatar" property="avatar" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <collection property="tags" ofType="java.lang.String" >
+            <result column="tagcontent" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+  <sql id="Base_Column_List" >
+    id, openid, title, cover, status, like_counts, collect_counts, create_time
+  </sql>
+  <sql id="Blob_Column_List" >
+    content
+  </sql>
+
+
+    <!--查询所有文章-->
+  <select id="selectByPopularity" resultMap="ArticleVOMap" parameterType="java.lang.String" >
+    select a.id,a.title,a.cover,a.status,a.like_counts,a.collect_counts,a.content,a.create_time,u.nickname,u.avatar,t.content tagcontent
+    from article a left join user u on a.openid=u.openid left join tag t on a.id=t.article_id
+    where status=1 order by like_counts,collect_counts desc
+  </select>
+
+  <select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from article
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByOpenid" resultMap="ResultMapWithBLOBs" parameterType="java.lang.String" >
+    select
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from article
+    where openid = #{openid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from article
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.yetx.pojo.Article" >
+    insert into article (id, openid, title, 
+      cover, status, like_counts, 
+      collect_counts, create_time, content
+      )
+    values (#{id,jdbcType=VARCHAR}, #{openid,jdbcType=VARCHAR}, #{title,jdbcType=VARCHAR}, 
+      #{cover,jdbcType=VARCHAR}, #{status,jdbcType=INTEGER}, #{likeCounts,jdbcType=INTEGER}, 
+      #{collectCounts,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}, #{content,jdbcType=LONGVARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.yetx.pojo.Article" >
+    insert into article
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="openid != null" >
+        openid,
+      </if>
+      <if test="title != null" >
+        title,
+      </if>
+      <if test="cover != null" >
+        cover,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="likeCounts != null" >
+        like_counts,
+      </if>
+      <if test="collectCounts != null" >
+        collect_counts,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="content != null" >
+        content,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="openid != null" >
+        #{openid,jdbcType=VARCHAR},
+      </if>
+      <if test="title != null" >
+        #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="cover != null" >
+        #{cover,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="likeCounts != null" >
+        #{likeCounts,jdbcType=INTEGER},
+      </if>
+      <if test="collectCounts != null" >
+        #{collectCounts,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="content != null" >
+        #{content,jdbcType=LONGVARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.yetx.pojo.Article" >
+    update article
+    <set >
+      <if test="openid != null" >
+        openid = #{openid,jdbcType=VARCHAR},
+      </if>
+      <if test="title != null" >
+        title = #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="cover != null" >
+        cover = #{cover,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=INTEGER},
+      </if>
+      <if test="likeCounts != null" >
+        like_counts = #{likeCounts,jdbcType=INTEGER},
+      </if>
+      <if test="collectCounts != null" >
+        collect_counts = #{collectCounts,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="content != null" >
+        content = #{content,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.yetx.pojo.Article" >
+    update article
+    set openid = #{openid,jdbcType=VARCHAR},
+      title = #{title,jdbcType=VARCHAR},
+      cover = #{cover,jdbcType=VARCHAR},
+      status = #{status,jdbcType=INTEGER},
+      like_counts = #{likeCounts,jdbcType=INTEGER},
+      collect_counts = #{collectCounts,jdbcType=INTEGER},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      content = #{content,jdbcType=LONGVARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.yetx.pojo.Article" >
+    update article
+    set openid = #{openid,jdbcType=VARCHAR},
+      title = #{title,jdbcType=VARCHAR},
+      cover = #{cover,jdbcType=VARCHAR},
+      status = #{status,jdbcType=INTEGER},
+      like_counts = #{likeCounts,jdbcType=INTEGER},
+      collect_counts = #{collectCounts,jdbcType=INTEGER},
+      create_time = #{createTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>
