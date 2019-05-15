@@ -12,7 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface UserService {
-    public UserInfoVO login(String code, String nickname, String avatar);
+    public User register(String token, String nickname, String avatar);
+    public String login(String code);
     public List<User> findAllUser();
     public User findByOpenid(String openid);
     public String updateNickname(String token,String nickname) throws Exception;

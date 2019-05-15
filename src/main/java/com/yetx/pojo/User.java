@@ -1,12 +1,14 @@
 package com.yetx.pojo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Date;
 
 public class User {
     private String id;
 
+    @JsonIgnore
     private String openid;
 
     private String nickname;

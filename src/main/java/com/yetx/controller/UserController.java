@@ -2,6 +2,7 @@ package com.yetx.controller;
 
 import com.yetx.dto.UserDTO;
 import com.yetx.enums.StatusEnum;
+import com.yetx.pojo.User;
 import com.yetx.service.RedisService;
 import com.yetx.service.UserService;
 import com.yetx.utils.ResultVOUtils;
@@ -25,14 +26,19 @@ public class UserController {
     @Autowired
     private RedisService redisService;
 
-    @RequestMapping(value = "/login",method = RequestMethod.POST)
-    public ResultVO doLogin(@RequestParam("code") String code,
+    @RequestMapping(value = "/register",method = RequestMethod.POST)
+    public ResultVO doRegister(@RequestHeader("token") String token,
                             @RequestParam("nickname") String nickname,
                             @RequestParam("avatar") String avatar){
+        User user = userService.register(token,nickname,avatar);
+        return ResultVOUtils.success(user);
+    }
+    @RequestMapping(value = "/login",method = RequestMethod.POST)
+    public ResultVO doLogin(@RequestParam("code") String code){
         System.out.println("进来了");
-        UserInfoVO userInfoVO = userService.login(code,nickname,avatar);
-        if(!StringUtils.isEmpty(code))
-            return ResultVOUtils.success(userInfoVO);
+        String token = userService.login(code);
+        if(!StringUtils.isEmpty(token))
+            return ResultVOUtils.success(token);
         return ResultVOUtils.fail();
     }
     @RequestMapping(value = "/nickname",method = RequestMethod.PUT)

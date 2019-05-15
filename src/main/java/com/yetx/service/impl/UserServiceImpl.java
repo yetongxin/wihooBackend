@@ -31,13 +31,21 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 @Service
@@ -66,18 +74,71 @@ public class UserServiceImpl implements UserService {
     private String openid;
     private String session_key;
 
+    public static String getRandomFileName() {
+
+        SimpleDateFormat simpleDateFormat;
+
+        simpleDateFormat = new SimpleDateFormat("yyyyMMdd");
+
+        Date date = new Date();
+
+        String str = simpleDateFormat.format(date);
+
+        Random random = new Random();
+
+        int rannum = (int) (random.nextDouble() * (99999 - 10000 + 1)) + 10000;// 获取5位随机数
+
+        return rannum + str;// 当前时间
+    }
     @Override
-    public UserInfoVO login(String code, String nickname, String avatar) {
+    @Transactional
+    public User register(String token, String nickname, String avatar) {
+        String openid = redisService.findOpenidByToken(token);
+        User user = new User();
+
+        //下载头像到本地
+        URL url = null;
+        OutputStream os = null;InputStream is=null;
+        String PathToDB = "/" + openid + "/face/" + getRandomFileName();
+        String finalPath = avatarSpace + PathToDB ;
+        try {
+            url = new URL(avatar);
+            // 打开连接
+            URLConnection con = url.openConnection();
+            // 输入流
+            is = con.getInputStream();
+            File finalFile = new File(finalPath);
+            // 输出的文件流
+            if (finalFile.getParentFile() == null || !finalFile.getParentFile().isDirectory()) {
+                finalFile.getParentFile().mkdirs();//如果该用户是第一次上传，需要创建一个文件夹给他
+            }
+            os = new FileOutputStream(finalFile);
+            StreamUtils.copy(is,os);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                is.close();
+                os.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        userMapper.updateNickNameAndAvatarByOpenid(openid,nickname,PathToDB);
+        User res = userMapper.selectByOpenid(openid);
+        return res;
+    }
+    @Override
+    @Transactional
+    public String login(String code) {
         logger.info("code:{}",code);
         CloseableHttpClient httpclient = HttpClients.createDefault();
         String resultString = "";
         CloseableHttpResponse response = null;
-
-        //String url="https://api.weixin.qq.com/sns/jscode2session?appid="+appid+"&secret="+appsecret+"&js_code="+code+"&grant_type=authorization_code";
-
-
         String url="https://api.weixin.qq.com/sns/jscode2session?appid="+appid+"&secret="+appsecret+"&js_code="+code+"&grant_type=authorization_code";
-
         try {
             // 创建uri
             URIBuilder builder = new URIBuilder(url);
@@ -101,10 +162,8 @@ public class UserServiceImpl implements UserService {
         session_key = jsonObject.get("session_key")+"";
         openid = jsonObject.get("openid")+"";
 
-        System.out.println("session_key=="+session_key);
-        System.out.println("openid=="+openid);
-
-
+        logger.info("session_key={}",session_key);
+        logger.info("openid={}",openid);
 
         User user = userMapper.selectByOpenid( openid );
         if(user==null){
@@ -113,8 +172,8 @@ public class UserServiceImpl implements UserService {
             user.setId(UUID.randomUUID().toString());
             user.setFollowCounts(0);
             user.setFansCounts(0);
-            user.setNickname(nickname);
-            user.setAvatar(avatar);
+            user.setNickname("null_name");
+            user.setAvatar("null_avatar");
             user.setLikeCounts(0);
             user.setOpenid(openid);
             user.setCollectCounts(0);
@@ -130,9 +189,76 @@ public class UserServiceImpl implements UserService {
         sessionObj.put( "sessionKey",session_key );
         //设置为1天
         redisOperator.set("TOKEN:"+skey,sessionObj.toJSONString(),60*60*24);
-        return new UserInfoVO(skey,user.getNickname(),user.getAvatar(),user.getFollowCounts(),
-                user.getFansCounts(),user.getCollectCounts(),user.getLikeCounts());
+        return skey;
     }
+//    @Override
+//    @Transactional
+//    public UserInfoVO login(String code) {
+//        logger.info("code:{}",code);
+//        CloseableHttpClient httpclient = HttpClients.createDefault();
+//        String resultString = "";
+//        CloseableHttpResponse response = null;
+//
+//        //String url="https://api.weixin.qq.com/sns/jscode2session?appid="+appid+"&secret="+appsecret+"&js_code="+code+"&grant_type=authorization_code";
+//
+//
+//        String url="https://api.weixin.qq.com/sns/jscode2session?appid="+appid+"&secret="+appsecret+"&js_code="+code+"&grant_type=authorization_code";
+//
+//        try {
+//            // 创建uri
+//            URIBuilder builder = new URIBuilder(url);
+//            URI uri = builder.build();
+//
+//            // 创建http GET请求
+//            HttpGet httpGet = new HttpGet(uri);
+//
+//            // 执行请求
+//            response = httpclient.execute(httpGet);
+//            // 判断返回状态是否为200
+//            if (response.getStatusLine().getStatusCode() == 200) {
+//                resultString = EntityUtils.toString(response.getEntity(), "UTF-8");
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        System.out.println("获得response:"+resultString);
+//        // 解析json
+//        JSONObject jsonObject = (JSONObject) JSONObject.parse(resultString);
+//        session_key = jsonObject.get("session_key")+"";
+//        openid = jsonObject.get("openid")+"";
+//
+//        System.out.println("session_key=="+session_key);
+//        System.out.println("openid=="+openid);
+//
+//
+//
+//        User user = userMapper.selectByOpenid( openid );
+//        if(user==null){
+//            //入库
+//            user = new User();
+//            user.setId(UUID.randomUUID().toString());
+//            user.setFollowCounts(0);
+//            user.setFansCounts(0);
+//            user.setNickname("null_name");
+//            user.setAvatar("null_avatar");
+//            user.setLikeCounts(0);
+//            user.setOpenid(openid);
+//            user.setCollectCounts(0);
+//
+//            userMapper.insert(user);
+//        }
+//        else {
+//            logger.info("用户已存在");
+//        }
+//        String skey = UUID.randomUUID().toString();
+//        JSONObject sessionObj = new JSONObject();
+//        sessionObj.put( "openid",openid );
+//        sessionObj.put( "sessionKey",session_key );
+//        //设置为1天
+//        redisOperator.set("TOKEN:"+skey,sessionObj.toJSONString(),60*60*24);
+//        return new UserInfoVO(skey,user.getNickname(),user.getAvatar(),user.getFollowCounts(),
+//                user.getFansCounts(),user.getCollectCounts(),user.getLikeCounts());
+//    }
 
     @Override
     public List<User> findAllUser() {
