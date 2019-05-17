@@ -8,7 +8,8 @@ import com.yetx.service.UserService;
 import com.yetx.utils.ResultVOUtils;
 import com.yetx.vo.PageVO;
 import com.yetx.vo.ResultVO;
-import com.yetx.vo.UserInfoVO;
+
+import com.yetx.vo.UserLoginStatusVO;
 import io.netty.util.internal.StringUtil;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,15 +31,16 @@ public class UserController {
     public ResultVO doRegister(@RequestHeader("token") String token,
                             @RequestParam("nickname") String nickname,
                             @RequestParam("avatar") String avatar){
+        System.out.println("进来/user/register");
         User user = userService.register(token,nickname,avatar);
         return ResultVOUtils.success(user);
     }
     @RequestMapping(value = "/login",method = RequestMethod.POST)
     public ResultVO doLogin(@RequestParam("code") String code){
         System.out.println("进来了");
-        String token = userService.login(code);
-        if(!StringUtils.isEmpty(token))
-            return ResultVOUtils.success(token);
+        UserLoginStatusVO userLoginStatusVO = userService.login(code);
+        if(userLoginStatusVO!=null)
+            return ResultVOUtils.success(userLoginStatusVO);
         return ResultVOUtils.fail();
     }
     @RequestMapping(value = "/nickname",method = RequestMethod.PUT)

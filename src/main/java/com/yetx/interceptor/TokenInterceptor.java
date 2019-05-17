@@ -33,7 +33,8 @@ public class TokenInterceptor implements HandlerInterceptor {
         String token = request.getHeader("token");
         logger.info("传进来的token:{}",token);
         if(token==null||StringUtils.isEmpty((token))){
-            returnErrorResponse(response, ResultVOUtils.fail(AuthErrorEnum.NOT_LOG_IN));
+            returnErrorResponse(response, ResultVOUtils.fail(AuthErrorEnum.TOKEN_NULL));
+            logger.error("传进来的token为null");
             return false;
         }
         else{

@@ -6,14 +6,14 @@ import com.yetx.dto.UserDTO;
 import com.yetx.pojo.Article;
 import com.yetx.pojo.User;
 import com.yetx.vo.PageVO;
-import com.yetx.vo.UserInfoVO;
+import com.yetx.vo.UserLoginStatusVO;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface UserService {
     public User register(String token, String nickname, String avatar);
-    public String login(String code);
+    public UserLoginStatusVO login(String code);
     public List<User> findAllUser();
     public User findByOpenid(String openid);
     public String updateNickname(String token,String nickname) throws Exception;

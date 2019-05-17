@@ -3,6 +3,7 @@ package com.yetx.config;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yetx.interceptor.TokenInterceptor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -18,9 +19,13 @@ import java.util.TimeZone;
 
 @Configuration
 public class WebMVCConfig extends WebMvcConfigurationSupport {
+
+    @Value("${avatar.space}")
+    private String avatarSpace;
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/").addResourceLocations("file:h:/data/");
+        System.out.println("头像地址："+avatarSpace);
+        registry.addResourceHandler("/images/**").addResourceLocations("file:"+avatarSpace+"/");
         registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
     }
     //注册拦截器

@@ -18,7 +18,7 @@ import com.yetx.service.RedisService;
 import com.yetx.service.UserService;
 import com.yetx.utils.RedisOperator;
 import com.yetx.vo.PageVO;
-import com.yetx.vo.UserInfoVO;
+import com.yetx.vo.UserLoginStatusVO;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
@@ -94,12 +94,11 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public User register(String token, String nickname, String avatar) {
         String openid = redisService.findOpenidByToken(token);
-        User user = new User();
-
+        User user = userMapper.selectByOpenid(openid);
         //下载头像到本地
         URL url = null;
         OutputStream os = null;InputStream is=null;
-        String PathToDB = "/" + openid + "/face/" + getRandomFileName();
+        String PathToDB = "/" + user.getId() + "/face/" + getRandomFileName()+".jpg";
         String finalPath = avatarSpace + PathToDB ;
         try {
             url = new URL(avatar);
@@ -113,7 +112,7 @@ public class UserServiceImpl implements UserService {
                 finalFile.getParentFile().mkdirs();//如果该用户是第一次上传，需要创建一个文件夹给他
             }
             os = new FileOutputStream(finalFile);
-            StreamUtils.copy(is,os);
+            IOUtils.copy(is,os);
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -126,14 +125,14 @@ public class UserServiceImpl implements UserService {
                 e.printStackTrace();
             }
         }
-
+        PathToDB = "/images"+PathToDB;
         userMapper.updateNickNameAndAvatarByOpenid(openid,nickname,PathToDB);
         User res = userMapper.selectByOpenid(openid);
         return res;
     }
     @Override
     @Transactional
-    public String login(String code) {
+    public UserLoginStatusVO login(String code) {
         logger.info("code:{}",code);
         CloseableHttpClient httpclient = HttpClients.createDefault();
         String resultString = "";
@@ -143,10 +142,8 @@ public class UserServiceImpl implements UserService {
             // 创建uri
             URIBuilder builder = new URIBuilder(url);
             URI uri = builder.build();
-
             // 创建http GET请求
             HttpGet httpGet = new HttpGet(uri);
-
             // 执行请求
             response = httpclient.execute(httpGet);
             // 判断返回状态是否为200
@@ -166,10 +163,11 @@ public class UserServiceImpl implements UserService {
         logger.info("openid={}",openid);
 
         User user = userMapper.selectByOpenid( openid );
+        boolean first = true;
         if(user==null){
             //入库
             user = new User();
-            user.setId(UUID.randomUUID().toString());
+            user.setId(UUID.randomUUID().toString().replace("-",""));
             user.setFollowCounts(0);
             user.setFansCounts(0);
             user.setNickname("null_name");
@@ -181,6 +179,7 @@ public class UserServiceImpl implements UserService {
             userMapper.insert(user);
         }
         else {
+            first = false;
             logger.info("用户已存在");
         }
         String skey = UUID.randomUUID().toString();
@@ -189,7 +188,7 @@ public class UserServiceImpl implements UserService {
         sessionObj.put( "sessionKey",session_key );
         //设置为1天
         redisOperator.set("TOKEN:"+skey,sessionObj.toJSONString(),60*60*24);
-        return skey;
+        return new UserLoginStatusVO(skey,first);
     }
 //    @Override
 //    @Transactional
@@ -291,7 +290,8 @@ public class UserServiceImpl implements UserService {
         //定义一个要存储到磁盘的位置
         String fileSpace = avatarSpace;
         String openid = redisService.findOpenidByToken(token);
-        String PathToDB = "/" + openid + "/face";
+        User user = userMapper.selectByOpenid(openid);
+        String PathToDB = "/" + user.getId() + "/face";
         //接下来将文件写入服务器磁盘，并将文件的相对路径存入数据库中
         FileOutputStream fileOutputStream = null;
         InputStream inputStream = null;
@@ -309,7 +309,7 @@ public class UserServiceImpl implements UserService {
                     fileOutputStream = new FileOutputStream(finalFile);
                     inputStream = files[0].getInputStream();
                     IOUtils.copy(inputStream, fileOutputStream);
-                    User user = userMapper.selectByOpenid(openid);
+                    PathToDB = "/images"+PathToDB;//资源映射
                     user.setAvatar(PathToDB);
                     userMapper.updateByPrimaryKeySelective(user);
                     return PathToDB;
