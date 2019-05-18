@@ -35,4 +35,6 @@ public interface CommentMapper {
 
     @Delete("delete from comment where parent_type=1 and parent_id=#{commentId}")
     int deleteSubComment(@Param("commentId")String commentId);
+
+    List<CommentVO> selectCommentsVOByAnswerId(String answerId);
 }

@@ -1,10 +1,5 @@
 package com.yetx.dto;
 
-import com.yetx.pojo.Answer;
-import com.yetx.pojo.Article;
-import com.yetx.pojo.Question;
-import com.yetx.pojo.User;
-
 import java.util.Date;
 import java.util.List;
 

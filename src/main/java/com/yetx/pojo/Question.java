@@ -1,44 +1,30 @@
 package com.yetx.pojo;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.util.Date;
 
 public class Question {
     private String id;
 
-    @JsonIgnore
-    private String openid;
+    private String userId;
 
     private String title;
 
     private Integer focusCounts;
 
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    private Integer ansCounts;
+
     private Date createTime;
 
     private String content;
 
-    public Question(String id, String openid, String title, Integer focusCounts, Date createTime, String content) {
+    public Question(String id, String userId, String title, Integer focusCounts, Integer ansCounts, Date createTime, String content) {
         this.id = id;
-        this.openid = openid;
+        this.userId = userId;
         this.title = title;
         this.focusCounts = focusCounts;
+        this.ansCounts = ansCounts;
         this.createTime = createTime;
         this.content = content;
-    }
-
-    @Override
-    public String toString() {
-        return "Question{" +
-                "id='" + id + '\'' +
-                ", openid='" + openid + '\'' +
-                ", title='" + title + '\'' +
-                ", focusCounts=" + focusCounts +
-                ", createTime=" + createTime +
-                ", content='" + content + '\'' +
-                '}';
     }
 
     public Question() {
@@ -53,12 +39,12 @@ public class Question {
         this.id = id == null ? null : id.trim();
     }
 
-    public String getOpenid() {
-        return openid;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setOpenid(String openid) {
-        this.openid = openid == null ? null : openid.trim();
+    public void setUserId(String userId) {
+        this.userId = userId == null ? null : userId.trim();
     }
 
     public String getTitle() {
@@ -77,6 +63,14 @@ public class Question {
         this.focusCounts = focusCounts;
     }
 
+    public Integer getAnsCounts() {
+        return ansCounts;
+    }
+
+    public void setAnsCounts(Integer ansCounts) {
+        this.ansCounts = ansCounts;
+    }
+
     public Date getCreateTime() {
         return createTime;
     }
@@ -91,5 +85,18 @@ public class Question {
 
     public void setContent(String content) {
         this.content = content == null ? null : content.trim();
+    }
+
+    @Override
+    public String toString() {
+        return "Question{" +
+                "id='" + id + '\'' +
+                ", userId='" + userId + '\'' +
+                ", title='" + title + '\'' +
+                ", focusCounts=" + focusCounts +
+                ", ansCounts=" + ansCounts +
+                ", createTime=" + createTime +
+                ", content='" + content + '\'' +
+                '}';
     }
 }

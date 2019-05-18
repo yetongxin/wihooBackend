@@ -32,7 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -354,28 +353,37 @@ public class UserServiceImpl implements UserService {
 
         return pageVO;
     }
+
+    //TODO:修改为USER_ID
+
+
     @Override
     public PageVO findAllQuestion(String token, Integer staPage, Integer pageSize) {
-
-        String openid = redisService.findOpenidByToken(token);
-        PageHelper.startPage(staPage,pageSize);
-        List<Question> list = questionMapper.selectByOpenid(openid);
-        PageInfo pageInfo = new PageInfo(list);
-
-        //返回前端需要的PageVO
-        PageVO pageVO = new PageVO();
-        pageVO.setCurData(pageInfo.getList());
-        pageVO.setPageNum(pageInfo.getPages());
-        pageVO.setCurPage(staPage);
-        pageVO.setRecords(pageInfo.getTotal());
-        return pageVO;
+        return null;
     }
+//    @Override
+//    public PageVO findAllQuestion(String token, Integer staPage, Integer pageSize) {
+//
+//        String openid = redisService.findOpenidByToken(token);
+//        PageHelper.startPage(staPage,pageSize);
+//        List<Question> list = questionMapper.selectByOpenid(openid);
+//        PageInfo pageInfo = new PageInfo(list);
+//
+//        //返回前端需要的PageVO
+//        PageVO pageVO = new PageVO();
+//        pageVO.setCurData(pageInfo.getList());
+//        pageVO.setPageNum(pageInfo.getPages());
+//        pageVO.setCurPage(staPage);
+//        pageVO.setRecords(pageInfo.getTotal());
+//        return pageVO;
+//    }
     @Override
     public PageVO findAllAnswer(String token, Integer staPage, Integer pageSize) {
 
         String openid = redisService.findOpenidByToken(token);
+        String userId = userMapper.selectUserIdByOpenId(openid);
         PageHelper.startPage(staPage,pageSize);
-        List<Answer> list = answerMapper.selectByOpenid(openid);
+        List<Answer> list = answerMapper.selectByUserId(userId);
         PageInfo pageInfo = new PageInfo(list);
 
         //返回前端需要的PageVO

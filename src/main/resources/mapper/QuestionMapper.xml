@@ -4,55 +4,56 @@
   <resultMap id="BaseResultMap" type="com.yetx.pojo.Question" >
     <constructor >
       <idArg column="id" jdbcType="VARCHAR" javaType="java.lang.String" />
-      <arg column="openid" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="user_id" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="title" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="focus_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="ans_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
       <arg column="create_time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
     </constructor>
   </resultMap>
   <resultMap id="ResultMapWithBLOBs" type="com.yetx.pojo.Question" >
     <constructor >
       <idArg column="id" jdbcType="VARCHAR" javaType="java.lang.String" />
-      <arg column="openid" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="user_id" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="title" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="focus_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="ans_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
       <arg column="create_time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
       <arg column="content" jdbcType="LONGVARCHAR" javaType="java.lang.String" />
     </constructor>
   </resultMap>
   <sql id="Base_Column_List" >
-    id, openid, title, focus_counts, create_time
+    id, user_id, title, focus_counts, ans_counts, create_time
   </sql>
   <sql id="Blob_Column_List" >
     content
   </sql>
+
+  <select id="selectByKeyWords" resultMap="ResultMapWithBLOBs">
+    SELECT * FROM  question WHERE 1>2 OR
+    <foreach collection="keywords" item="item" index="index"  separator="OR">
+      `title` LIKE CONCAT('%',#{item},'%')
+    </foreach>
+  </select>
   <select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs" parameterType="java.lang.String" >
-    select
+    select 
     <include refid="Base_Column_List" />
     ,
     <include refid="Blob_Column_List" />
     from question
     where id = #{id,jdbcType=VARCHAR}
-  </select>
-  <select id="selectByOpenid" resultMap="ResultMapWithBLOBs" parameterType="java.lang.String" >
-    select
-    <include refid="Base_Column_List" />
-    ,
-    <include refid="Blob_Column_List" />
-    from question
-    where openid = #{openid,jdbcType=VARCHAR}
   </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
     delete from question
     where id = #{id,jdbcType=VARCHAR}
   </delete>
   <insert id="insert" parameterType="com.yetx.pojo.Question" >
-    insert into question (id, openid, title, 
-      focus_counts, create_time, content
-      )
-    values (#{id,jdbcType=VARCHAR}, #{openid,jdbcType=VARCHAR}, #{title,jdbcType=VARCHAR}, 
-      #{focusCounts,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}, #{content,jdbcType=LONGVARCHAR}
-      )
+    insert into question (id, user_id, title, 
+      focus_counts, ans_counts, create_time, 
+      content)
+    values (#{id,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, #{title,jdbcType=VARCHAR}, 
+      #{focusCounts,jdbcType=INTEGER}, #{ansCounts,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{content,jdbcType=LONGVARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.yetx.pojo.Question" >
     insert into question
@@ -60,14 +61,17 @@
       <if test="id != null" >
         id,
       </if>
-      <if test="openid != null" >
-        openid,
+      <if test="userId != null" >
+        user_id,
       </if>
       <if test="title != null" >
         title,
       </if>
       <if test="focusCounts != null" >
         focus_counts,
+      </if>
+      <if test="ansCounts != null" >
+        ans_counts,
       </if>
       <if test="createTime != null" >
         create_time,
@@ -80,14 +84,17 @@
       <if test="id != null" >
         #{id,jdbcType=VARCHAR},
       </if>
-      <if test="openid != null" >
-        #{openid,jdbcType=VARCHAR},
+      <if test="userId != null" >
+        #{userId,jdbcType=VARCHAR},
       </if>
       <if test="title != null" >
         #{title,jdbcType=VARCHAR},
       </if>
       <if test="focusCounts != null" >
         #{focusCounts,jdbcType=INTEGER},
+      </if>
+      <if test="ansCounts != null" >
+        #{ansCounts,jdbcType=INTEGER},
       </if>
       <if test="createTime != null" >
         #{createTime,jdbcType=TIMESTAMP},
@@ -100,14 +107,17 @@
   <update id="updateByPrimaryKeySelective" parameterType="com.yetx.pojo.Question" >
     update question
     <set >
-      <if test="openid != null" >
-        openid = #{openid,jdbcType=VARCHAR},
+      <if test="userId != null" >
+        user_id = #{userId,jdbcType=VARCHAR},
       </if>
       <if test="title != null" >
         title = #{title,jdbcType=VARCHAR},
       </if>
       <if test="focusCounts != null" >
         focus_counts = #{focusCounts,jdbcType=INTEGER},
+      </if>
+      <if test="ansCounts != null" >
+        ans_counts = #{ansCounts,jdbcType=INTEGER},
       </if>
       <if test="createTime != null" >
         create_time = #{createTime,jdbcType=TIMESTAMP},
@@ -120,18 +130,20 @@
   </update>
   <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.yetx.pojo.Question" >
     update question
-    set openid = #{openid,jdbcType=VARCHAR},
+    set user_id = #{userId,jdbcType=VARCHAR},
       title = #{title,jdbcType=VARCHAR},
       focus_counts = #{focusCounts,jdbcType=INTEGER},
+      ans_counts = #{ansCounts,jdbcType=INTEGER},
       create_time = #{createTime,jdbcType=TIMESTAMP},
       content = #{content,jdbcType=LONGVARCHAR}
     where id = #{id,jdbcType=VARCHAR}
   </update>
   <update id="updateByPrimaryKey" parameterType="com.yetx.pojo.Question" >
     update question
-    set openid = #{openid,jdbcType=VARCHAR},
+    set user_id = #{userId,jdbcType=VARCHAR},
       title = #{title,jdbcType=VARCHAR},
       focus_counts = #{focusCounts,jdbcType=INTEGER},
+      ans_counts = #{ansCounts,jdbcType=INTEGER},
       create_time = #{createTime,jdbcType=TIMESTAMP}
     where id = #{id,jdbcType=VARCHAR}
   </update>

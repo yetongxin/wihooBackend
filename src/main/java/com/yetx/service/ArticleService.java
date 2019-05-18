@@ -25,24 +25,17 @@ public interface ArticleService {
 
     /**
      * 保存文章，包含修改与删除
-     * @param token
-     * @param article
      * @return
      */
     public Article saveArticle(String token,Article article);
 
     /**
      * 删除文章
-     * @param token
-     * @param ArticleId
-     * @return
      */
     Boolean deleteArticle(String token, String ArticleId);
 
     /**
      * 收藏文章
-     * @param articleId
-     * @return
      */
 
     public Boolean collectArticle(String token, String articleId);
@@ -61,25 +54,16 @@ public interface ArticleService {
 
     /**
      * 删除评论
-     * @param token
-     * @param articleCommentId
-     * @return
      */
     Boolean deleteCommentArticle(String token, String articleCommentId);
 
     /**
      * 点赞文章
-     * @param token
-     * @param articleId
-     * @return
      */
     Integer zanArticle(String token, String articleId);
 
     /**
      * 取消赞
-     * @param token
-     * @param articleId
-     * @return
      */
     Integer disZanArticle(String token, String articleId);
 

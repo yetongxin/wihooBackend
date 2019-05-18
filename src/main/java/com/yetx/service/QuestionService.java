@@ -1,14 +1,22 @@
 package com.yetx.service;
 
+import com.yetx.dto.QuestionDTO;
+import com.yetx.pojo.Question;
+import com.yetx.vo.PageVO;
+
+import java.util.List;
+
 public interface QuestionService {
 
-    public void findAllQuestions();
+    public PageVO findAllQuestions(Integer staPage, Integer pageSize);
 
-    public void uploadNewQuestion(String token);
+    public Question uploadQuestion(String token, QuestionDTO questionDTO);
 
-    public void deleteQuestion(String token,String questionId);
+    public Boolean deleteQuestion(String token,String questionId);
 
-    public void updateQuestion(String token);
+    public List<Question> findQuestionByUserId(String userId);
 
-    
+    public List<Question> searchQuestionByKeyWord(String keyword);
+
+    public void focusQuestion(String token,String questionId);
 }

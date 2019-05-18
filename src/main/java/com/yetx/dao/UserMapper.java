@@ -4,6 +4,7 @@ import com.yetx.dto.UserDTO;
 import com.yetx.pojo.Article;
 import com.yetx.pojo.User;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 import org.springframework.stereotype.Repository;
 
@@ -31,6 +32,8 @@ public interface UserMapper {
                                         @Param("avatar") String avatar);
     UserDTO selectFollowsByOpenid(String openid);
 
+    @Select("select id from user where openid=#{openid}")
+    String selectUserIdByOpenId(@Param("openid")String openid);
 //    UserDTO selectAllArticleByOpenid(String openid);
 //    UserDTO selectAllQuestionByOpenid(String openid);
 //    UserDTO selectAllAnswerByOpenid(String openid);

@@ -7,44 +7,34 @@ import java.util.Date;
 public class Answer {
     private String id;
 
+    @JsonIgnore
     private String questionId;
 
-    @JsonIgnore
-    private String openid;
+    private String userId;
 
     private Integer likeCounts;
 
     private Integer commentCounts;
 
+    private Integer status;
+
     private Date createTime;
 
     private String content;
 
-    public Answer(String id, String questionId, String openid, Integer likeCounts, Integer commentCounts, Date createTime, String content) {
+    public Answer(String id, String questionId, String userId, Integer likeCounts, Integer commentCounts, Integer status, Date createTime, String content) {
         this.id = id;
         this.questionId = questionId;
-        this.openid = openid;
+        this.userId = userId;
         this.likeCounts = likeCounts;
         this.commentCounts = commentCounts;
+        this.status = status;
         this.createTime = createTime;
         this.content = content;
     }
 
     public Answer() {
         super();
-    }
-
-    @Override
-    public String toString() {
-        return "Answer{" +
-                "id='" + id + '\'' +
-                ", questionId='" + questionId + '\'' +
-                ", openid='" + openid + '\'' +
-                ", likeCounts=" + likeCounts +
-                ", commentCounts=" + commentCounts +
-                ", createTime=" + createTime +
-                ", content='" + content + '\'' +
-                '}';
     }
 
     public String getId() {
@@ -63,12 +53,12 @@ public class Answer {
         this.questionId = questionId == null ? null : questionId.trim();
     }
 
-    public String getOpenid() {
-        return openid;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setOpenid(String openid) {
-        this.openid = openid == null ? null : openid.trim();
+    public void setUserId(String userId) {
+        this.userId = userId == null ? null : userId.trim();
     }
 
     public Integer getLikeCounts() {
@@ -85,6 +75,14 @@ public class Answer {
 
     public void setCommentCounts(Integer commentCounts) {
         this.commentCounts = commentCounts;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
     }
 
     public Date getCreateTime() {

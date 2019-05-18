@@ -5,7 +5,7 @@
     <constructor >
       <idArg column="id" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="question_id" jdbcType="VARCHAR" javaType="java.lang.String" />
-      <arg column="openid" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="user_id" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="like_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
       <arg column="comment_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
       <arg column="create_time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
@@ -15,7 +15,7 @@
     <constructor >
       <idArg column="id" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="question_id" jdbcType="VARCHAR" javaType="java.lang.String" />
-      <arg column="openid" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="user_id" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="like_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
       <arg column="comment_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
       <arg column="create_time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
@@ -23,7 +23,7 @@
     </constructor>
   </resultMap>
   <sql id="Base_Column_List" >
-    id, question_id, openid, like_counts, comment_counts, create_time
+    id, question_id, user_id, like_counts, comment_counts, create_time
   </sql>
   <sql id="Blob_Column_List" >
     content
@@ -36,23 +36,15 @@
     from answer
     where id = #{id,jdbcType=VARCHAR}
   </select>
-  <select id="selectByOpenid" resultMap="ResultMapWithBLOBs" parameterType="java.lang.String" >
-    select
-    <include refid="Base_Column_List" />
-    ,
-    <include refid="Blob_Column_List" />
-    from answer
-    where openid = #{openid,jdbcType=VARCHAR}
-  </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
     delete from answer
     where id = #{id,jdbcType=VARCHAR}
   </delete>
   <insert id="insert" parameterType="com.yetx.pojo.Answer" >
-    insert into answer (id, question_id, openid, 
+    insert into answer (id, question_id, user_id, 
       like_counts, comment_counts, create_time, 
       content)
-    values (#{id,jdbcType=VARCHAR}, #{questionId,jdbcType=VARCHAR}, #{openid,jdbcType=VARCHAR}, 
+    values (#{id,jdbcType=VARCHAR}, #{questionId,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, 
       #{likeCounts,jdbcType=INTEGER}, #{commentCounts,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}, 
       #{content,jdbcType=LONGVARCHAR})
   </insert>
@@ -65,8 +57,8 @@
       <if test="questionId != null" >
         question_id,
       </if>
-      <if test="openid != null" >
-        openid,
+      <if test="userId != null" >
+        user_id,
       </if>
       <if test="likeCounts != null" >
         like_counts,
@@ -88,8 +80,8 @@
       <if test="questionId != null" >
         #{questionId,jdbcType=VARCHAR},
       </if>
-      <if test="openid != null" >
-        #{openid,jdbcType=VARCHAR},
+      <if test="userId != null" >
+        #{userId,jdbcType=VARCHAR},
       </if>
       <if test="likeCounts != null" >
         #{likeCounts,jdbcType=INTEGER},
@@ -111,8 +103,8 @@
       <if test="questionId != null" >
         question_id = #{questionId,jdbcType=VARCHAR},
       </if>
-      <if test="openid != null" >
-        openid = #{openid,jdbcType=VARCHAR},
+      <if test="userId != null" >
+        user_id = #{userId,jdbcType=VARCHAR},
       </if>
       <if test="likeCounts != null" >
         like_counts = #{likeCounts,jdbcType=INTEGER},
@@ -132,7 +124,7 @@
   <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.yetx.pojo.Answer" >
     update answer
     set question_id = #{questionId,jdbcType=VARCHAR},
-      openid = #{openid,jdbcType=VARCHAR},
+      user_id = #{userId,jdbcType=VARCHAR},
       like_counts = #{likeCounts,jdbcType=INTEGER},
       comment_counts = #{commentCounts,jdbcType=INTEGER},
       create_time = #{createTime,jdbcType=TIMESTAMP},
@@ -142,7 +134,7 @@
   <update id="updateByPrimaryKey" parameterType="com.yetx.pojo.Answer" >
     update answer
     set question_id = #{questionId,jdbcType=VARCHAR},
-      openid = #{openid,jdbcType=VARCHAR},
+      user_id = #{userId,jdbcType=VARCHAR},
       like_counts = #{likeCounts,jdbcType=INTEGER},
       comment_counts = #{commentCounts,jdbcType=INTEGER},
       create_time = #{createTime,jdbcType=TIMESTAMP}

@@ -67,9 +67,24 @@
     left join user u1 on u1.id=c1.from_uid
     left join user u2 on u2.id=c2.from_uid
     left join user u3 on u3.id=c2.to_uid
-    where c1.parent_type=2 and c1.parent_id=#{acticleId};
+    where c1.parent_type=2 and c1.parent_id=#{acticleId}
 
   </select>
+
+
+  <select id="selectCommentsVOByAnswerId" resultMap="CommentVOResultMap" parameterType="java.lang.String">
+
+    select c1.id,c1.from_uid,c1.content,c1.like_counts,c1.create_time,u1.nickname as from_nickname1,
+    c2.id as id2,c2.from_uid as from_uid2,c2.to_uid as to_uid2,c2.content as content2,c2.like_counts as like_counts2,c2.create_time as create_time2,
+    u2.nickname as from_nickname2,u3.nickname as to_nickname2
+    from comment c1
+    left join comment c2 on c2.parent_id=c1.id and c2.parent_type=3
+    left join user u1 on u1.id=c1.from_uid
+    left join user u2 on u2.id=c2.from_uid
+    left join user u3 on u3.id=c2.to_uid
+    where c1.parent_type=4 and c1.parent_id=#{acticleId}
+  </select>
+
   <select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs" parameterType="java.lang.String" >
     select 
     <include refid="Base_Column_List" />
