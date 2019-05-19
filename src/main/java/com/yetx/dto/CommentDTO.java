@@ -2,6 +2,7 @@ package com.yetx.dto;
 
 
 public class CommentDTO {
+    //这里的id可能是answerid,也可能是answer_comment_id，也可能是articleId
     private String id;
 
     private Integer type;

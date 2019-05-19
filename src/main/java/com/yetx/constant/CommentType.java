@@ -5,4 +5,5 @@ public interface CommentType {
     int ARTICLE_COM = 2;
     int ANSWER_SUB_COM = 3;
     int ANSWER_COM = 4;
+    int DELETE_COM = 5;
 }

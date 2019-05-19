@@ -26,6 +26,8 @@ public interface AnswerService {
      * @return 插入或更新后数据库中的answer
      */
     public Answer uploadAnswer(String token, AnswerDTO answerDTO);
+
+    public Answer updateAnswer(String token,AnswerDTO answerDTO);
     /**
      * 删除回答
      * @param token

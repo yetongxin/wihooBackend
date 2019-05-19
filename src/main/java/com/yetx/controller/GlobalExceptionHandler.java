@@ -17,7 +17,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MyException.class)
     @ResponseBody
     public ResultVO handleException(MyException e){
-        logger.error("出现异常：{}",e);
+        logger.error("出现异常：{}",e.getMessage());
         return ResultVOUtils.fail(e.getCode(),e.getMessage());
     }
 

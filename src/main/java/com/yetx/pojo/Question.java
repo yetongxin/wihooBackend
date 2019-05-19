@@ -1,5 +1,8 @@
 package com.yetx.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Date;
 
 public class Question {
@@ -9,20 +12,24 @@ public class Question {
 
     private String title;
 
+    private String content;
+
     private Integer focusCounts;
 
     private Integer ansCounts;
 
+    @JsonIgnore
+    private Integer status;
+
     private Date createTime;
 
-    private String content;
-
-    public Question(String id, String userId, String title, Integer focusCounts, Integer ansCounts, Date createTime, String content) {
+    public Question(String id, String userId, String title, Integer focusCounts, Integer ansCounts, Integer status, Date createTime, String content) {
         this.id = id;
         this.userId = userId;
         this.title = title;
         this.focusCounts = focusCounts;
         this.ansCounts = ansCounts;
+        this.status = status;
         this.createTime = createTime;
         this.content = content;
     }
@@ -71,6 +78,14 @@ public class Question {
         this.ansCounts = ansCounts;
     }
 
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
     public Date getCreateTime() {
         return createTime;
     }
@@ -85,18 +100,5 @@ public class Question {
 
     public void setContent(String content) {
         this.content = content == null ? null : content.trim();
-    }
-
-    @Override
-    public String toString() {
-        return "Question{" +
-                "id='" + id + '\'' +
-                ", userId='" + userId + '\'' +
-                ", title='" + title + '\'' +
-                ", focusCounts=" + focusCounts +
-                ", ansCounts=" + ansCounts +
-                ", createTime=" + createTime +
-                ", content='" + content + '\'' +
-                '}';
     }
 }

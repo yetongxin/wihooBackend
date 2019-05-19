@@ -2,11 +2,15 @@ package com.yetx.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yetx.constant.QuestionStatus;
+import com.yetx.dao.FocusQuestionMapper;
 import com.yetx.dao.QuestionMapper;
 import com.yetx.dao.UserMapper;
 import com.yetx.dto.QuestionDTO;
+import com.yetx.enums.AuthErrorEnum;
 import com.yetx.enums.QuestionErrorEnum;
 import com.yetx.exception.MyException;
+import com.yetx.pojo.FocusQuestion;
 import com.yetx.pojo.Question;
 import com.yetx.service.QuestionService;
 import com.yetx.service.RedisService;
@@ -30,9 +34,13 @@ public class QuestionServiceImpl implements QuestionService {
     private RedisService redisService;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private FocusQuestionMapper focusQuestionMapper;
     private Logger logger = LoggerFactory.getLogger(QuestionServiceImpl.class);
+
     @Override
     public PageVO findAllQuestions(Integer staPage, Integer pageSize) {
+        //TODO:添加返回用户头像与昵称
         if(staPage==null)   staPage = 1;
         if(pageSize==null)  pageSize = 5;
         PageHelper.startPage(staPage,pageSize);
@@ -55,49 +63,78 @@ public class QuestionServiceImpl implements QuestionService {
         String openid = redisService.findOpenidByToken(token);
         String userId = userMapper.selectUserIdByOpenId(openid);
 
+        if(StringUtils.isEmpty(userId)){
+            throw new MyException(AuthErrorEnum.USER_NOT_EXIST);
+        }
         Question question = new Question();
         question.setTitle(questionDTO.getTitle());
         question.setContent(questionDTO.getContent());
         question.setUserId(userId);
 
         //上传新的问题
+        String questionId = IdUtils.getNewId();
+        question.setId(questionId);
+        question.setFocusCounts(0);
+        question.setAnsCounts(0);
+        question.setStatus(QuestionStatus.ONSHOW);
+        questionMapper.insert(question);
+        return questionMapper.selectByPrimaryKey(questionId);
+
+
+    }
+    @Override
+    @Transactional
+    public Question updateQuestion(String token, QuestionDTO questionDTO){
+        String openid = redisService.findOpenidByToken(token);
+        String userId = userMapper.selectUserIdByOpenId(openid);
+        if(StringUtils.isEmpty(userId)){
+            logger.error(AuthErrorEnum.USER_NOT_EXIST.getMsg());
+            throw new MyException(AuthErrorEnum.USER_NOT_EXIST);
+        }
         if(StringUtils.isEmpty(questionDTO.getQuestionId())){
-            String questionId = IdUtils.getNewId();
-            question.setId(questionId);
-            question.setFocusCounts(0);
-            question.setAnsCounts(0);
-            questionMapper.insert(question);
-            return questionMapper.selectByPrimaryKey(questionId);
+            logger.error(QuestionErrorEnum.QUESTION_ID_NULL.getMsg());
+            throw new MyException(QuestionErrorEnum.QUESTION_ID_NULL);
         }
-        else{//更新
-            question.setId(questionDTO.getQuestionId());
-            questionMapper.updateByPrimaryKeySelective(question);
-            return questionMapper.selectByPrimaryKey(questionDTO.getQuestionId());
-        }
+        Question findQ = questionMapper.selectByPrimaryKey(questionDTO.getQuestionId());
+        if(findQ==null)
+            throw new MyException(QuestionErrorEnum.QUESTION_NOT_FOUND);
+        if(!findQ.getUserId().equals(userId))
+            throw new MyException(QuestionErrorEnum.QUESTION_ID_UID_NOTMATCH);
+        Question question = new Question();
+        question.setId(findQ.getId());
+        question.setTitle(findQ.getTitle());
+        question.setContent(findQ.getContent());
+        questionMapper.updateByPrimaryKeySelective(question);
+        return questionMapper.selectByPrimaryKey(questionDTO.getQuestionId());
     }
 
     @Transactional
     @Override
     public Boolean deleteQuestion(String token, String questionId) {
+        //此处的删除只是改变Question的状态，因为用户删除问题后不应该删除掉对应的回答（有人想保留回答）
         String openid = redisService.findOpenidByToken(token);
         String userId = userMapper.selectUserIdByOpenId(openid);
 
         if(StringUtils.isEmpty(questionId)){
-            logger.error(QuestionErrorEnum.QUESTION_ID_NULL.getMsg());
             throw new MyException(QuestionErrorEnum.QUESTION_ID_NULL);
         }
         else {
+            Question findRes = questionMapper.selectByPrimaryKey(questionId);
             //防止出现用户id与问题id不同
-            if(questionMapper.selectByPrimaryKey(questionId).getUserId().equals(userId)) {
-                questionMapper.deleteByPrimaryKey(questionId);
-                //TODO:还需要删除对应的回答
-            }
-            else{
-                logger.error(QuestionErrorEnum.QUESTION_ID_UID_NOTMATCH.getMsg());
+            if(!findRes.getUserId().equals(userId)) {
                 throw new MyException(QuestionErrorEnum.QUESTION_ID_UID_NOTMATCH);
             }
-
-
+            else if(findRes.getStatus()==QuestionStatus.HAVA_DELETE){
+                throw new MyException(QuestionErrorEnum.QUESTION_HAVA_DELETE);
+            }
+            else{
+                Question question = new Question();
+                question.setId(questionId);
+                question.setStatus(QuestionStatus.HAVA_DELETE);
+                question.setTitle("该问题已删除");
+                question.setContent("该问题已删除");
+                questionMapper.updateByPrimaryKeySelective(question);
+            }
         }
         return true;
     }
@@ -123,7 +160,33 @@ public class QuestionServiceImpl implements QuestionService {
 
     //TODO:关注问题
     @Override
-    public void focusQuestion(String token, String questionId) {
+    @Transactional
+    public Integer focusQuestion(String token, String questionId) {
+        String openid = redisService.findOpenidByToken(token);
+        String userId = userMapper.selectUserIdByOpenId(openid);
 
+        if(StringUtils.isEmpty(userId)){
+            throw new MyException(AuthErrorEnum.USER_NOT_EXIST);
+        }
+        if(focusQuestionMapper.countUserFocusQues(userId,questionId)==0){
+            questionMapper.addFocusCounts(questionId);
+            focusQuestionMapper.insert(new FocusQuestion(IdUtils.getNewId(),userId,questionId));
+        }
+        return questionMapper.selectByPrimaryKey(questionId).getFocusCounts();
+    }
+
+    @Transactional
+    @Override
+    public Integer disFocusQuestion(String token, String questionId){
+        String openid = redisService.findOpenidByToken(token);
+        String userId = userMapper.selectUserIdByOpenId(openid);
+        if(StringUtils.isEmpty(userId)){
+            throw new MyException(AuthErrorEnum.USER_NOT_EXIST);
+        }
+        if (focusQuestionMapper.countUserFocusQues(userId,questionId)!=0){
+            questionMapper.subFocusCounts(questionId);
+            focusQuestionMapper.deleteUserFocusQues(userId,questionId);
+        }
+        return questionMapper.selectByPrimaryKey(questionId).getFocusCounts();
     }
 }

@@ -8,8 +8,6 @@ public class AnswerDTO {
 
     private String questionId;
 
-    private String userId;
-
     private String content;
 
     private Integer status;
@@ -21,7 +19,6 @@ public class AnswerDTO {
     public AnswerDTO(String answerId, String questionId, String userId, String content, Integer status) {
         this.answerId = answerId;
         this.questionId = questionId;
-        this.userId = userId;
         this.content = content;
         this.status = status;
     }
@@ -40,14 +37,6 @@ public class AnswerDTO {
 
     public void setQuestionId(String questionId) {
         this.questionId = questionId;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
     }
 
     public String getContent() {
@@ -71,7 +60,6 @@ public class AnswerDTO {
         return "AnswerDTO{" +
                 "answerId='" + answerId + '\'' +
                 ", questionId='" + questionId + '\'' +
-                ", userId='" + userId + '\'' +
                 ", content='" + content + '\'' +
                 ", status=" + status +
                 '}';

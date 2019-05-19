@@ -186,9 +186,12 @@ public class ArticleServiceImpl implements ArticleService {
         //简单判断是否合法
         if(StringUtils.isEmpty(openid))
             throw new MyException(UserErrorEnum.TOKEN_NOT_FIND);
-
-        commentMapper.deleteByPrimaryKey(articleCommentId);
-        commentMapper.deleteSubComment(articleCommentId);
+        Comment comment = commentMapper.selectByPrimaryKey(articleCommentId);
+        if(comment==null){
+            throw new MyException(CommentErrorEnum.COMMENT_NULL);
+        }
+        comment.setContent("该评论已删除");
+        commentMapper.updateByPrimaryKey(comment);
         return true;
     }
 

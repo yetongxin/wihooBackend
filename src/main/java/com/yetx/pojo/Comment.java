@@ -11,6 +11,8 @@ public class Comment {
 
     private String toUid;
 
+    private String content;
+
     private Integer likeCounts;
 
     @JsonIgnore
@@ -21,7 +23,6 @@ public class Comment {
 
     private Date createTime;
 
-    private String content;
 
     public Comment(String id, String fromUid, String toUid, Integer likeCounts, String parentId, Integer parentType, Date createTime, String content) {
         this.id = id;

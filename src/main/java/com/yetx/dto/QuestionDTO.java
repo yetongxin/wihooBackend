@@ -11,8 +11,6 @@ public class QuestionDTO {
 
     private String content;
 
-    private Date createTime;
-
     public QuestionDTO() {
     }
 
@@ -20,7 +18,6 @@ public class QuestionDTO {
         this.questionId = questionId;
         this.title = title;
         this.content = content;
-        this.createTime = createTime;
     }
 
     public String getQuestionId() {
@@ -47,21 +44,12 @@ public class QuestionDTO {
         this.content = content;
     }
 
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
     @Override
     public String toString() {
         return "QuestionDTO{" +
-                "id='" + questionId + '\'' +
+                "questionId='" + questionId + '\'' +
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
-                ", createTime=" + createTime +
                 '}';
     }
 }

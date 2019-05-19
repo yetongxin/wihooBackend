@@ -4,13 +4,14 @@
   <resultMap id="BaseResultMap" type="com.yetx.pojo.LikeAnswer" >
     <constructor >
       <idArg column="id" jdbcType="VARCHAR" javaType="java.lang.String" />
-      <arg column="answer_id" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="like_type_id" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="user_id" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="type" jdbcType="INTEGER" javaType="java.lang.Integer" />
       <arg column="create_time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
     </constructor>
   </resultMap>
   <sql id="Base_Column_List" >
-    id, answer_id, user_id, create_time
+    id, like_type_id, user_id, type, create_time
   </sql>
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
     select 
@@ -23,10 +24,10 @@
     where id = #{id,jdbcType=VARCHAR}
   </delete>
   <insert id="insert" parameterType="com.yetx.pojo.LikeAnswer" >
-    insert into like_answer (id, answer_id, user_id, 
-      create_time)
-    values (#{id,jdbcType=VARCHAR}, #{answerId,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, 
-      #{createTime,jdbcType=TIMESTAMP})
+    insert into like_answer (id, like_type_id, user_id, 
+      type, create_time)
+    values (#{id,jdbcType=VARCHAR}, #{likeTypeId,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, 
+      #{type,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP})
   </insert>
   <insert id="insertSelective" parameterType="com.yetx.pojo.LikeAnswer" >
     insert into like_answer
@@ -34,11 +35,14 @@
       <if test="id != null" >
         id,
       </if>
-      <if test="answerId != null" >
-        answer_id,
+      <if test="likeTypeId != null" >
+        like_type_id,
       </if>
       <if test="userId != null" >
         user_id,
+      </if>
+      <if test="type != null" >
+        type,
       </if>
       <if test="createTime != null" >
         create_time,
@@ -48,11 +52,14 @@
       <if test="id != null" >
         #{id,jdbcType=VARCHAR},
       </if>
-      <if test="answerId != null" >
-        #{answerId,jdbcType=VARCHAR},
+      <if test="likeTypeId != null" >
+        #{likeTypeId,jdbcType=VARCHAR},
       </if>
       <if test="userId != null" >
         #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=INTEGER},
       </if>
       <if test="createTime != null" >
         #{createTime,jdbcType=TIMESTAMP},
@@ -62,11 +69,14 @@
   <update id="updateByPrimaryKeySelective" parameterType="com.yetx.pojo.LikeAnswer" >
     update like_answer
     <set >
-      <if test="answerId != null" >
-        answer_id = #{answerId,jdbcType=VARCHAR},
+      <if test="likeTypeId != null" >
+        like_type_id = #{likeTypeId,jdbcType=VARCHAR},
       </if>
       <if test="userId != null" >
         user_id = #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        type = #{type,jdbcType=INTEGER},
       </if>
       <if test="createTime != null" >
         create_time = #{createTime,jdbcType=TIMESTAMP},
@@ -76,8 +86,9 @@
   </update>
   <update id="updateByPrimaryKey" parameterType="com.yetx.pojo.LikeAnswer" >
     update like_answer
-    set answer_id = #{answerId,jdbcType=VARCHAR},
+    set like_type_id = #{likeTypeId,jdbcType=VARCHAR},
       user_id = #{userId,jdbcType=VARCHAR},
+      type = #{type,jdbcType=INTEGER},
       create_time = #{createTime,jdbcType=TIMESTAMP}
     where id = #{id,jdbcType=VARCHAR}
   </update>

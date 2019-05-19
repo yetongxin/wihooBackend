@@ -5,6 +5,7 @@ import com.yetx.vo.CommentVO;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -37,4 +38,14 @@ public interface CommentMapper {
     int deleteSubComment(@Param("commentId")String commentId);
 
     List<CommentVO> selectCommentsVOByAnswerId(String answerId);
+
+    @Update("update comment set content=\"该评论已删除\",parent_type=5 where commentId=#{commentId}")
+    int deleteComment(@Param("commentId")String commentId);
+
+    @Update("update comment set like_counts=like_counts+1 where id=#{commentId}")
+    int addCommentZan(@Param("commentId")String commentId);
+
+    @Update("update comment set like_counts=if(like_counts=0,0,like_counts-1) where id=#{commentId}")
+    int subCommentZan(@Param("commentId")String commentId);
+
 }

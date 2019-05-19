@@ -40,9 +40,15 @@ public class WebMVCConfig extends WebMvcConfigurationSupport {
         //设置（模糊）匹配的url
         List<String> urlPatterns = new ArrayList<>();
         urlPatterns.add("/user/**");
+        urlPatterns.add("/question/**");
+
 //        urlPatterns.add("/api/v1/userinfo/*");
 
-        registry.addInterceptor(tokenInterceptor()).addPathPatterns(urlPatterns).excludePathPatterns("/user/login").excludePathPatterns("/article/*");
+        registry.addInterceptor(tokenInterceptor()).addPathPatterns(urlPatterns)
+                .excludePathPatterns("/user/login")
+                .excludePathPatterns("/article/*")
+                .excludePathPatterns("/question/all/time","/question/user","/question/search");
+
         super.addInterceptors(registry);
     }
 
