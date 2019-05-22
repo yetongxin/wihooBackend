@@ -1,5 +1,6 @@
 package com.yetx.controller;
 
+import com.yetx.dto.ArticleDTO;
 import com.yetx.dto.CommentDTO;
 import com.yetx.pojo.Article;
 import com.yetx.pojo.ArticleComment;
@@ -31,25 +32,39 @@ public class ArticleController {
         List<CommentVO> articleComments = articleService.findAllCommentByArticleId(articleId);
         return ResultVOUtils.success(articleComments);
     }
-
-    //以下需要验证身份
-    @PostMapping("/upload")
-    public ResultVO saveArticle(@RequestHeader("token") String token, @RequestBody Article article){
-        Article articleRes = articleService.saveArticle(token,article);
-        return ResultVOUtils.success(articleRes);
+    @PostMapping("")
+    public ResultVO uploadArticle(@RequestHeader("token")String token,@RequestBody ArticleDTO articleDTO){
+        return ResultVOUtils.success(articleService.uploadArticle(token,articleDTO));
     }
-    @DeleteMapping("/delete")
+    @PutMapping("")
+    public ResultVO updateArticle(@RequestHeader("token")String token,@RequestBody ArticleDTO articleDTO){
+        return ResultVOUtils.success(articleService.updateArticle(token,articleDTO));
+    }
+    @DeleteMapping("")
     public ResultVO deleteArticle(@RequestHeader("token") String token, @RequestParam String  articleId){
         Boolean res = articleService.deleteArticle(token,articleId);
         return ResultVOUtils.success(res);
     }
+//    @PostMapping("/testupload")
+//    public ResultVO testUpload(@RequestBody ArticleDTO articleDTO){
+//        System.out.println("接收到的articleDTO:");
+//        System.out.println(articleDTO);
+//        return ResultVOUtils.success(articleDTO);
+//    }
+//    //以下需要验证身份
+//    @PostMapping("/upload")
+//    public ResultVO saveArticle(@RequestHeader("token") String token, @RequestBody Article article){
+//        Article articleRes = articleService.saveArticle(token,article);
+//        return ResultVOUtils.success(articleRes);
+//    }
+
     @PostMapping("/collect")
     public ResultVO collectArticle(@RequestHeader("token") String token, @RequestParam String articleId){
         Boolean isDone = articleService.collectArticle(token,articleId);
         return ResultVOUtils.success(isDone);
     }
-    @PostMapping("/discollect")
-    public ResultVO discollectArticle(@RequestHeader("token") String token, @RequestParam String articleId){
+    @DeleteMapping("/collect")
+    public ResultVO disCollectArticle(@RequestHeader("token") String token, @RequestParam String articleId){
         Boolean isDone = articleService.disCollectArticle(token,articleId);
         return ResultVOUtils.success(isDone);
     }
@@ -58,7 +73,7 @@ public class ArticleController {
         Integer res = articleService.zanArticle(token,articleId);
         return ResultVOUtils.success(res);
     }
-    @PostMapping("/diszan")
+    @DeleteMapping("/zan")
     public ResultVO disZanArticle(@RequestHeader("token") String token,@RequestParam String articleId){
         Integer res = articleService.disZanArticle(token,articleId);
         return ResultVOUtils.success(res);
