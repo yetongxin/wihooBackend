@@ -12,6 +12,8 @@ public class Answer {
 
     private String userId;
 
+    private String content;
+
     private Integer likeCounts;
 
     private Integer commentCounts;
@@ -20,7 +22,6 @@ public class Answer {
 
     private Date createTime;
 
-    private String content;
 
     public Answer(String id, String questionId, String userId, Integer likeCounts, Integer commentCounts, Integer status, Date createTime, String content) {
         this.id = id;

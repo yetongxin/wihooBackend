@@ -22,7 +22,7 @@ public class ArticleVO {
 
     private Date createTime;
 
-    private List<Tag> tags;
+    private List<String> tags;
 
     private String nickname;
 
@@ -95,11 +95,11 @@ public class ArticleVO {
         this.collectCounts = collectCounts;
     }
 
-    public List<Tag> getTags() {
+    public List<String> getTags() {
         return tags;
     }
 
-    public void setTags(List<Tag> tags) {
+    public void setTags(List<String> tags) {
         this.tags = tags;
     }
 
@@ -117,5 +117,22 @@ public class ArticleVO {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    @Override
+    public String toString() {
+        return "ArticleVO{" +
+                "id='" + id + '\'' +
+                ", title='" + title + '\'' +
+                ", cover='" + cover + '\'' +
+                ", status=" + status +
+                ", likeCounts=" + likeCounts +
+                ", collectCounts=" + collectCounts +
+                ", content='" + content + '\'' +
+                ", createTime=" + createTime +
+                ", tags=" + tags +
+                ", nickname='" + nickname + '\'' +
+                ", avatar='" + avatar + '\'' +
+                '}';
     }
 }

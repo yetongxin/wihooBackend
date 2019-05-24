@@ -25,6 +25,12 @@ public class Tag {
         super();
     }
 
+    public Tag(String id, String articleId, String content) {
+        this.id = id;
+        this.articleId = articleId;
+        this.content = content;
+    }
+
     public String getId() {
         return id;
     }

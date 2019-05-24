@@ -189,4 +189,14 @@ public class QuestionServiceImpl implements QuestionService {
         }
         return questionMapper.selectByPrimaryKey(questionId).getFocusCounts();
     }
+
+    @Override
+    public List<Question> findAllfocusQuestion(String token){
+        String openid = redisService.findOpenidByToken(token);
+        if(StringUtils.isEmpty(openid)){
+            throw new MyException(AuthErrorEnum.TOKEN_NOT_FIND);
+        }
+        String userId = userMapper.selectUserIdByOpenId(openid);
+        return questionMapper.selectFocusQuestion(userId);
+    }
 }

@@ -2,12 +2,14 @@ package com.yetx.controller;
 
 import com.yetx.dto.ArticleDTO;
 import com.yetx.dto.CommentDTO;
+import com.yetx.enums.StatusEnum;
 import com.yetx.pojo.Article;
 import com.yetx.pojo.ArticleComment;
 import com.yetx.pojo.Comment;
 import com.yetx.service.ArticleService;
 import com.yetx.utils.ResultVOUtils;
 import com.yetx.vo.CommentVO;
+import com.yetx.vo.DraftVO;
 import com.yetx.vo.PageVO;
 import com.yetx.vo.ResultVO;
 import org.apache.ibatis.annotations.Delete;
@@ -45,18 +47,14 @@ public class ArticleController {
         Boolean res = articleService.deleteArticle(token,articleId);
         return ResultVOUtils.success(res);
     }
-//    @PostMapping("/testupload")
-//    public ResultVO testUpload(@RequestBody ArticleDTO articleDTO){
-//        System.out.println("接收到的articleDTO:");
-//        System.out.println(articleDTO);
-//        return ResultVOUtils.success(articleDTO);
-//    }
-//    //以下需要验证身份
-//    @PostMapping("/upload")
-//    public ResultVO saveArticle(@RequestHeader("token") String token, @RequestBody Article article){
-//        Article articleRes = articleService.saveArticle(token,article);
-//        return ResultVOUtils.success(articleRes);
-//    }
+
+    @GetMapping("/user/draft")
+    public ResultVO queryMyDraft(@RequestHeader("token")String token){
+        DraftVO draftVO = articleService.findUserDraft(token);
+        if(draftVO!=null)
+            return ResultVOUtils.success(draftVO);
+        return ResultVOUtils.success(null,StatusEnum.NO_ARTICEL_DRAFT);
+    }
 
     @PostMapping("/collect")
     public ResultVO collectArticle(@RequestHeader("token") String token, @RequestParam String articleId){

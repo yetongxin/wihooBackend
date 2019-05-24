@@ -3,7 +3,9 @@ package com.yetx.service;
 
 import com.github.pagehelper.PageInfo;
 import com.yetx.dto.UserDTO;
+import com.yetx.pojo.Answer;
 import com.yetx.pojo.Article;
+import com.yetx.pojo.Question;
 import com.yetx.pojo.User;
 import com.yetx.vo.PageVO;
 import com.yetx.vo.UserLoginStatusVO;
@@ -29,4 +31,8 @@ public interface UserService {
     public PageVO findAllQuestion(String token, Integer staPage, Integer pageSize);
     public PageVO findAllAnswer(String token, Integer staPage, Integer pageSize);
 
+    //查看收藏的回答
+    List<Answer> findAllCollectAnswer(String token);
+
+    List<Question> findAllFocusQuestion(String token);
 }

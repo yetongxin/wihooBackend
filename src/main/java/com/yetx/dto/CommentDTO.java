@@ -7,8 +7,6 @@ public class CommentDTO {
 
     private Integer type;
 
-    private String fromUid;
-
     private String toUid;
 
     private String content;
@@ -32,14 +30,6 @@ public class CommentDTO {
         this.type = type;
     }
 
-    public String getFromUid() {
-        return fromUid;
-    }
-
-    public void setFromUid(String fromUid) {
-        this.fromUid = fromUid;
-    }
-
     public String getToUid() {
         return toUid;
     }
@@ -54,5 +44,15 @@ public class CommentDTO {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    @Override
+    public String toString() {
+        return "CommentDTO{" +
+                "id='" + id + '\'' +
+                ", type=" + type +
+                ", toUid='" + toUid + '\'' +
+                ", content='" + content + '\'' +
+                '}';
     }
 }

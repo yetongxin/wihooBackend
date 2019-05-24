@@ -2,6 +2,9 @@ package com.yetx.dao;
 
 import com.yetx.pojo.Article;
 import com.yetx.vo.ArticleVO;
+import com.yetx.vo.DraftVO;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,7 +19,7 @@ public interface ArticleMapper {
 
     Article selectByPrimaryKey(String id);
 
-    List<Article> selectByOpenid(String openid);
+
 
     int updateByPrimaryKeySelective(Article record);
 
@@ -25,7 +28,16 @@ public interface ArticleMapper {
     int updateByPrimaryKey(Article record);
 
 
+    List<ArticleVO> selectAllByUserIdPaged(@Param("userId") String userId);
+
+    List<ArticleVO> selectAllByUserId(@Param("userId") String userId);
+
+    DraftVO selectDraftByUserId(@Param("userId") String userId);
+
     List<ArticleVO> selectByPopularity();
+
+
+    ArticleVO selectVOByArticleId(@Param("articleId")String articleId);
 
 
 }

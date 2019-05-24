@@ -1,6 +1,7 @@
 package com.yetx.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yetx.dao.AnswerMapper;
@@ -9,6 +10,7 @@ import com.yetx.dao.QuestionMapper;
 import com.yetx.dao.UserMapper;
 import com.yetx.dto.UserDTO;
 import com.yetx.enums.AuthErrorEnum;
+import com.yetx.enums.UserErrorEnum;
 import com.yetx.exception.MyException;
 import com.yetx.pojo.Answer;
 import com.yetx.pojo.Article;
@@ -17,6 +19,7 @@ import com.yetx.pojo.User;
 import com.yetx.service.RedisService;
 import com.yetx.service.UserService;
 import com.yetx.utils.RedisOperator;
+import com.yetx.vo.ArticleVO;
 import com.yetx.vo.PageVO;
 import com.yetx.vo.UserLoginStatusVO;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -284,6 +287,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public String updateAvatar(String token, MultipartFile[] files) {
 
         //定义一个要存储到磁盘的位置
@@ -340,8 +344,14 @@ public class UserServiceImpl implements UserService {
     public PageVO findAllArticle(String token, Integer staPage, Integer pageSize) {
 
         String openid = redisService.findOpenidByToken(token);
-        PageHelper.startPage(staPage,pageSize);
-        List<Article> list = articleMapper.selectByOpenid(openid);
+        if(StringUtils.isEmpty(openid))
+            throw new MyException(UserErrorEnum.TOKEN_NOT_FIND);
+        String userId = userMapper.selectUserIdByOpenId(openid);
+
+
+        Page page = PageHelper.startPage(staPage,pageSize);
+        //page.setCountColumn("DISTINCT a.id");
+        List<ArticleVO> list = articleMapper.selectAllByUserIdPaged(userId);
         PageInfo pageInfo = new PageInfo(list);
 
         //返回前端需要的PageVO
@@ -355,11 +365,21 @@ public class UserServiceImpl implements UserService {
     }
 
     //TODO:修改为USER_ID
-
-
     @Override
     public PageVO findAllQuestion(String token, Integer staPage, Integer pageSize) {
-        return null;
+        String openid = redisService.findOpenidByToken(token);
+        String userId = userMapper.selectUserIdByOpenId(openid);
+        PageHelper.startPage(staPage,pageSize);
+        List<Question> list = questionMapper.selectByUserId(userId);
+        PageInfo pageInfo = new PageInfo(list);
+
+        //返回前端需要的PageVO
+        PageVO pageVO = new PageVO();
+        pageVO.setCurData(pageInfo.getList());
+        pageVO.setPageNum(pageInfo.getPages());
+        pageVO.setCurPage(staPage);
+        pageVO.setRecords(pageInfo.getTotal());
+        return pageVO;
     }
 //    @Override
 //    public PageVO findAllQuestion(String token, Integer staPage, Integer pageSize) {
@@ -393,5 +413,24 @@ public class UserServiceImpl implements UserService {
         pageVO.setCurPage(staPage);
         pageVO.setRecords(pageInfo.getTotal());
         return pageVO;
+    }
+    @Override
+    public List<Answer> findAllCollectAnswer(String token){
+        String openid = redisService.findOpenidByToken(token);
+        if(StringUtils.isEmpty(openid))
+            throw new MyException(AuthErrorEnum.TOKEN_NOT_FIND);
+        String userId = userMapper.selectUserIdByOpenId(openid);
+
+        return answerMapper.selectCollectAnswer(userId);
+    }
+
+    @Override
+    public List<Question> findAllFocusQuestion(String token) {
+        String openid = redisService.findOpenidByToken(token);
+        if(StringUtils.isEmpty(openid))
+            throw new MyException(AuthErrorEnum.TOKEN_NOT_FIND);
+        String userId = userMapper.selectUserIdByOpenId(openid);
+
+        return questionMapper.selectFocusQuestion(userId);
     }
 }

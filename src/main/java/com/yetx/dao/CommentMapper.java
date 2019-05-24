@@ -39,7 +39,7 @@ public interface CommentMapper {
 
     List<CommentVO> selectCommentsVOByAnswerId(String answerId);
 
-    @Update("update comment set content=\"该评论已删除\",parent_type=5 where commentId=#{commentId}")
+    @Update("update comment set content=\"该评论已删除\",parent_type=5 where id=#{commentId}")
     int deleteComment(@Param("commentId")String commentId);
 
     @Update("update comment set like_counts=like_counts+1 where id=#{commentId}")

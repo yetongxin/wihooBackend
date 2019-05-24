@@ -27,10 +27,10 @@ public interface AnswerMapper {
     @Select("select * from answer where user_id = #{userId}")
     List<Answer> selectByUserId(@Param("userId")String userId);
 
-    @Select("select * from answer where question_id = #{questionId} order by create_time desc")
+    @Select("select * from answer where question_id = #{questionId} and status=1 order by create_time desc")
     List<Answer> selectByQuestionIdOrderByTime(@Param("questionId") String questionId);
 
-    @Select("select * from answer where question_id = #{questionId} order by like_counts desc")
+    @Select("select * from answer where question_id = #{questionId} and status=1 order by like_counts desc")
     List<Answer> selectByQuestionIdOrderByZan(@Param("questionId") String questionId);
 
     @Update("update answer set like_counts=like_counts+1 where id = #{answerId}")
@@ -41,5 +41,9 @@ public interface AnswerMapper {
 
     @Update("UPDATE answer SET comment_counts=comment_counts+1 where id=#{answerId}")
     int addCommentCounts(@Param("answerId")String answerId);
+
+    @Select("SELECT a.* from answer a INNER JOIN collect_answer c on c.answer_id=a.id WHERE c.user_id=#{userId}")
+    List<Answer> selectCollectAnswer(@Param("userId")String userId);
+
 
 }

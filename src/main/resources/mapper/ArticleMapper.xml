@@ -4,7 +4,7 @@
   <resultMap id="BaseResultMap" type="com.yetx.pojo.Article" >
     <constructor >
       <idArg column="id" jdbcType="VARCHAR" javaType="java.lang.String" />
-      <arg column="openid" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="user_id" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="title" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="cover" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="status" jdbcType="INTEGER" javaType="java.lang.Integer" />
@@ -16,7 +16,7 @@
   <resultMap id="ResultMapWithBLOBs" type="com.yetx.pojo.Article" >
     <constructor >
       <idArg column="id" jdbcType="VARCHAR" javaType="java.lang.String" />
-      <arg column="openid" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="user_id" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="title" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="cover" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="status" jdbcType="INTEGER" javaType="java.lang.Integer" />
@@ -26,65 +26,117 @@
       <arg column="content" jdbcType="LONGVARCHAR" javaType="java.lang.String" />
     </constructor>
   </resultMap>
-    
-    <resultMap id="ArticleVOMap" type="com.yetx.vo.ArticleVO">
-        <id column="id" property="id" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result column="title" property="title" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result column="cover" property="cover" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result column="content" property="content" jdbcType="LONGVARCHAR" javaType="java.lang.String" />
-        <result column="status" property="status" jdbcType="INTEGER" javaType="java.lang.Integer" />
-        <result column="like_counts" property="likeCounts" jdbcType="INTEGER" javaType="java.lang.Integer" />
-        <result column="collect_counts" property="collectCounts" jdbcType="INTEGER" javaType="java.lang.Integer"/>
-        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" javaType="java.util.Date"/>
+  <resultMap id="ArticleVOMap" type="com.yetx.vo.ArticleVO">
+    <id column="id" property="id" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    <result column="title" property="title" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    <result column="cover" property="cover" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    <result column="content" property="content" jdbcType="LONGVARCHAR" javaType="java.lang.String" />
+    <result column="status" property="status" jdbcType="INTEGER" javaType="java.lang.Integer" />
+    <result column="like_counts" property="likeCounts" jdbcType="INTEGER" javaType="java.lang.Integer" />
+    <result column="collect_counts" property="collectCounts" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" javaType="java.util.Date"/>
 
-        <result column="nickname" property="nickname" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result column="avatar" property="avatar" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <collection property="tags" ofType="java.lang.String" >
-            <result column="tagcontent" jdbcType="VARCHAR"/>
-        </collection>
-    </resultMap>
+    <result column="nickname" property="nickname" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    <result column="avatar" property="avatar" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    <collection property="tags" ofType="java.lang.String" >
+      <result column="tagcontent" jdbcType="VARCHAR"/>
+    </collection>
+  </resultMap>
+  <resultMap id="ArticleVOMap2" type="com.yetx.vo.ArticleVO">
+    <id column="id" property="id" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    <result column="title" property="title" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    <result column="cover" property="cover" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    <result column="content" property="content" jdbcType="LONGVARCHAR" javaType="java.lang.String" />
+    <result column="status" property="status" jdbcType="INTEGER" javaType="java.lang.Integer" />
+    <result column="like_counts" property="likeCounts" jdbcType="INTEGER" javaType="java.lang.Integer" />
+    <result column="collect_counts" property="collectCounts" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" javaType="java.util.Date"/>
+
+    <result column="nickname" property="nickname" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    <result column="avatar" property="avatar" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    <collection property="tags" column="id" ofType="java.lang.String" javaType="java.util.List" select="selectTagByAid">
+      <result column="tagcontent" jdbcType="VARCHAR"/>
+    </collection>
+  </resultMap>
+
+  <resultMap id="DraftMap" type="com.yetx.vo.DraftVO">
+    <id column="id" property="id" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    <result column="title" property="title" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    <result column="cover" property="cover" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    <result column="content" property="content" jdbcType="LONGVARCHAR" javaType="java.lang.String" />
+  </resultMap>
+
   <sql id="Base_Column_List" >
-    id, openid, title, cover, status, like_counts, collect_counts, create_time
+    id, user_id, title, cover, status, like_counts, collect_counts, create_time
   </sql>
   <sql id="Blob_Column_List" >
     content
   </sql>
+  <!--    分页懒加载-->
+  <select id="selectTagByAid" resultType="java.lang.String">
+    select tag.content as tagcontent from tag as tag where tag.article_id=#{id}
+  </select>
+  <select id="selectAllByUserIdPaged" resultMap="ArticleVOMap2">
+    select a.id,a.title,a.cover,a.status,a.like_counts,a.collect_counts,a.content,a.create_time,u.nickname,u.avatar
+    from article a left join user u on a.user_id=u.id
+    where user_id=#{userId}
+  </select>
+  <!-- 这里支持草稿的分页，可以在service加 -->
+  <select id="selectDraftByUserId" resultMap="DraftMap" parameterType="java.lang.String">
+  select a.id,a.title,a.cover,a.content from article a
+  where user_id=#{userId} and status=0
+  </select>
+  <!--查询所有草稿-->
+  <!--<select id="selectDraftByUserId" resultMap="ArticleVOMap" parameterType="java.lang.String">-->
+      <!--select a.id,a.title,a.cover,a.status,a.like_counts,a.collect_counts,a.content,a.create_time,u.nickname,u.avatar,t.content tagcontent-->
+      <!--from article a left join user u on a.user_id=u.id left join tag t on a.id=t.article_id-->
+      <!--where user_id=#{userId} and status=0-->
+  <!--</select>-->
+
+  <!--  有点问题的分页      -->
+  <select id="selectAllByUserId" resultMap="ArticleVOMap" parameterType="java.lang.String">
+      select a.id,a.title,a.cover,a.status,a.like_counts,a.collect_counts,a.content,a.create_time,u.nickname,u.avatar,t.content tagcontent
+      from article a left join user u on a.user_id=u.id left join tag t on a.id=t.article_id
+      where user_id=#{userId}
+  </select>
 
 
-    <!--查询所有文章-->
-  <select id="selectByPopularity" resultMap="ArticleVOMap" parameterType="java.lang.String" >
+  <select id="selectByPopularity" resultMap="ArticleVOMap2" parameterType="java.lang.String" >
+  select a.id,a.title,a.cover,a.status,a.like_counts,a.collect_counts,a.content,a.create_time,u.nickname,u.avatar
+  from article a left join user u on a.user_id=u.id
+  where status=1 order by like_counts,collect_counts desc
+  </select>
+
+  <!--有点问题的分页-->
+  <!--<select id="selectByPopularity" resultMap="ArticleVOMap" parameterType="java.lang.String" >-->
+    <!--select a.id,a.title,a.cover,a.status,a.like_counts,a.collect_counts,a.content,a.create_time,u.nickname,u.avatar,t.content tagcontent-->
+    <!--from article a left join user u on a.user_id=u.id left join tag t on a.id=t.article_id-->
+    <!--where status=1 order by like_counts,collect_counts desc-->
+  <!--</select>-->
+  <select id="selectVOByArticleId" resultMap="ArticleVOMap" parameterType="java.lang.String" >
     select a.id,a.title,a.cover,a.status,a.like_counts,a.collect_counts,a.content,a.create_time,u.nickname,u.avatar,t.content tagcontent
-    from article a left join user u on a.openid=u.openid left join tag t on a.id=t.article_id
-    where status=1 order by like_counts,collect_counts desc
+    from article a left join user u on a.user_id=u.id left join tag t on a.id=t.article_id
+    where a.id=#{articleId}
   </select>
-
   <select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs" parameterType="java.lang.String" >
-    select 
-    <include refid="Base_Column_List" />
-    ,
-    <include refid="Blob_Column_List" />
-    from article
-    where id = #{id,jdbcType=VARCHAR}
-  </select>
-  <select id="selectByOpenid" resultMap="ResultMapWithBLOBs" parameterType="java.lang.String" >
     select
     <include refid="Base_Column_List" />
     ,
     <include refid="Blob_Column_List" />
     from article
-    where openid = #{openid,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
   </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
     delete from article
     where id = #{id,jdbcType=VARCHAR}
   </delete>
   <insert id="insert" parameterType="com.yetx.pojo.Article" >
-    insert into article (id, openid, title, 
-      cover, status, like_counts, 
+    insert into article (id, user_id, title,
+      cover, status, like_counts,
       collect_counts, create_time, content
       )
-    values (#{id,jdbcType=VARCHAR}, #{openid,jdbcType=VARCHAR}, #{title,jdbcType=VARCHAR}, 
-      #{cover,jdbcType=VARCHAR}, #{status,jdbcType=INTEGER}, #{likeCounts,jdbcType=INTEGER}, 
+    values (#{id,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, #{title,jdbcType=VARCHAR},
+      #{cover,jdbcType=VARCHAR}, #{status,jdbcType=INTEGER}, #{likeCounts,jdbcType=INTEGER},
       #{collectCounts,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}, #{content,jdbcType=LONGVARCHAR}
       )
   </insert>
@@ -94,8 +146,8 @@
       <if test="id != null" >
         id,
       </if>
-      <if test="openid != null" >
-        openid,
+      <if test="userId != null" >
+        user_id,
       </if>
       <if test="title != null" >
         title,
@@ -123,8 +175,8 @@
       <if test="id != null" >
         #{id,jdbcType=VARCHAR},
       </if>
-      <if test="openid != null" >
-        #{openid,jdbcType=VARCHAR},
+      <if test="userId != null" >
+        #{userId,jdbcType=VARCHAR},
       </if>
       <if test="title != null" >
         #{title,jdbcType=VARCHAR},
@@ -152,8 +204,8 @@
   <update id="updateByPrimaryKeySelective" parameterType="com.yetx.pojo.Article" >
     update article
     <set >
-      <if test="openid != null" >
-        openid = #{openid,jdbcType=VARCHAR},
+      <if test="userId != null" >
+        user_id = #{userId,jdbcType=VARCHAR},
       </if>
       <if test="title != null" >
         title = #{title,jdbcType=VARCHAR},
@@ -181,7 +233,7 @@
   </update>
   <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.yetx.pojo.Article" >
     update article
-    set openid = #{openid,jdbcType=VARCHAR},
+    set user_id = #{userId,jdbcType=VARCHAR},
       title = #{title,jdbcType=VARCHAR},
       cover = #{cover,jdbcType=VARCHAR},
       status = #{status,jdbcType=INTEGER},
@@ -193,7 +245,7 @@
   </update>
   <update id="updateByPrimaryKey" parameterType="com.yetx.pojo.Article" >
     update article
-    set openid = #{openid,jdbcType=VARCHAR},
+    set user_id = #{userId,jdbcType=VARCHAR},
       title = #{title,jdbcType=VARCHAR},
       cover = #{cover,jdbcType=VARCHAR},
       status = #{status,jdbcType=INTEGER},

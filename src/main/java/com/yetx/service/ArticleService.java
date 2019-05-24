@@ -1,16 +1,21 @@
 package com.yetx.service;
 
+import com.yetx.dto.ArticleDTO;
 import com.yetx.dto.CommentDTO;
 import com.yetx.pojo.Article;
 import com.yetx.pojo.ArticleComment;
 import com.yetx.pojo.Comment;
+import com.yetx.vo.ArticleVO;
 import com.yetx.vo.CommentVO;
+import com.yetx.vo.DraftVO;
 import com.yetx.vo.PageVO;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 public interface ArticleService {
+
+    public DraftVO findUserDraft(String token);
 
     public PageVO findAllArticleByPopularity(int staPage,int pageSize);
 
@@ -28,6 +33,11 @@ public interface ArticleService {
      * @return
      */
     public Article saveArticle(String token,Article article);
+
+    Boolean uploadArticle(String token, ArticleDTO article);
+
+    //TODO: 修改article表中的openid字段为userId
+    Boolean updateArticle(String token, ArticleDTO articleDTO);
 
     /**
      * 删除文章

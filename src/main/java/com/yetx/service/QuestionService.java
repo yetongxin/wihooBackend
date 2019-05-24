@@ -25,4 +25,6 @@ public interface QuestionService {
     public Integer focusQuestion(String token,String questionId);
 
     public Integer disFocusQuestion(String token, String questionId);
+
+    List<Question> findAllfocusQuestion(String token);
 }

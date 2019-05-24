@@ -3,6 +3,7 @@ package com.yetx.service.impl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yetx.constant.CommentType;
+import com.yetx.constant.EditStatus;
 import com.yetx.constant.ZanType;
 import com.yetx.dao.*;
 import com.yetx.dto.AnswerDTO;
@@ -11,10 +12,7 @@ import com.yetx.enums.AuthErrorEnum;
 import com.yetx.enums.CommentErrorEnum;
 import com.yetx.enums.QuestionErrorEnum;
 import com.yetx.exception.MyException;
-import com.yetx.pojo.Answer;
-import com.yetx.pojo.Comment;
-import com.yetx.pojo.LikeAnswer;
-import com.yetx.pojo.Question;
+import com.yetx.pojo.*;
 import com.yetx.service.AnswerService;
 import com.yetx.service.RedisService;
 import com.yetx.utils.IdUtils;
@@ -44,6 +42,8 @@ public class AnswerServiceImpl implements AnswerService {
     private CommentMapper commentMapper;
     @Autowired
     private LikeAnswerMapper likeAnswerMapper;
+    @Autowired
+    private CollectAnswerMapper collectAnswerMapper;
     private Logger logger = LoggerFactory.getLogger(AnswerServiceImpl.class);
     @Override
     public PageVO findAllAnswersOrderByZan(String questionId, Integer staPage, Integer pageSize) {
@@ -111,7 +111,9 @@ public class AnswerServiceImpl implements AnswerService {
         if(StringUtils.isEmpty(answerDTO.getQuestionId())){
            throw new MyException(QuestionErrorEnum.ANSWER_QUESID_NULL);
         }
-
+        if(answerDTO.getStatus()< EditStatus.DRAFT||answerDTO.getStatus()>EditStatus.ONSHOW){
+            throw new MyException(QuestionErrorEnum.ANSWER_UPLOAD_STATUS_ERROR);
+        }
         //构造插入数据库的answer
         //新上传，需要设置一系列的初始值
         Answer answer = new Answer();
@@ -146,6 +148,10 @@ public class AnswerServiceImpl implements AnswerService {
         if(answer==null){
             throw new MyException(QuestionErrorEnum.ANSWER_ID_NOT_FOUND);
         }
+        //已经发布的不能再存为草稿
+        if(answer.getStatus()==EditStatus.ONSHOW&&answerDTO.getStatus()==EditStatus.DRAFT){
+            throw new MyException(QuestionErrorEnum.ANSWER_UPLOAD_STATUS_ERROR);
+        }
         answer.setContent(answerDTO.getContent());
         answer.setStatus(answerDTO.getStatus());
         answer.setId(answerDTO.getAnswerId());
@@ -174,8 +180,7 @@ public class AnswerServiceImpl implements AnswerService {
         }
         //删除回答的同时更新问题表的回答数
         answerMapper.deleteByPrimaryKey(answerId);
-        Question question = new Question();
-        question.setId(answer.getQuestionId());
+        Question question = questionMapper.selectByPrimaryKey(answer.getQuestionId());
         question.setAnsCounts(question.getAnsCounts()-1);
         questionMapper.updateByPrimaryKeySelective(question);
         return true;
@@ -227,41 +232,50 @@ public class AnswerServiceImpl implements AnswerService {
         if(StringUtils.isEmpty(userId)){
             throw new MyException(AuthErrorEnum.TOKEN_NOT_FIND);
         }
-        commentDTO.setFromUid(userId);
+//        commentDTO.setFromUid(userId);
+        //开始构造
+        String toUid = "";
         //commentDTO的id字段在对应type下的表中查询不到对应的数据
         if(commentDTO.getType()>4||commentDTO.getType()<1){
             throw new MyException(QuestionErrorEnum.COMMENT_TYPE_OOR);
         }
-        //第一种评论
+        //第一种评论前端可以不给toUid
         else if(commentDTO.getType() == CommentType.ANSWER_COM){
             Answer answer = answerMapper.selectByPrimaryKey(commentDTO.getId());
             if(answer==null){
                 throw new MyException(QuestionErrorEnum.COMMENT_FOR_NOT_FOUND);
             }
+            toUid = answer.getUserId();
             //如果评论类型是回答，需要在answer表累加一下comment_counts
             answerMapper.addCommentCounts(answer.getId());
         }
         //第二种评论
         else if(commentDTO.getType() == CommentType.ANSWER_SUB_COM){
+            //第二种评论需要给一个toUid
+            if(StringUtils.isEmpty(commentDTO.getToUid())||
+                    userMapper.selectByPrimaryKey(commentDTO.getToUid())==null){
+                throw new MyException(QuestionErrorEnum.COMMENT_TOUID_NOT_FOUNT);
+            }
+            //看看存不存在其父评论
             Comment comment = commentMapper.selectByPrimaryKey(commentDTO.getId());
             if(comment==null){
                 throw new MyException(QuestionErrorEnum.COMMENT_FOR_NOT_FOUND);
             }
+            toUid = commentDTO.getToUid();
         }
         //通过各项检测,可以插入到数据库中
         Comment comment = new Comment();
         comment.setId(IdUtils.getNewId());
         comment.setParentType(commentDTO.getType());
         comment.setParentId(commentDTO.getId());
-        comment.setFromUid(commentDTO.getFromUid());
-        comment.setToUid(commentDTO.getToUid());
+        comment.setFromUid(userId);
+        comment.setToUid(toUid);
         comment.setContent(commentDTO.getContent());
         comment.setLikeCounts(0);
         commentMapper.insert(comment);
         return comment.getId();
     }
 
-    //TODO:修改文章的删除评论接口
     @Override
     public Boolean deleteComment(String token, String commentId) {
         String openid = redisService.findOpenidByToken(token);
@@ -300,7 +314,6 @@ public class AnswerServiceImpl implements AnswerService {
         }
         return commentMapper.selectByPrimaryKey(commentId).getLikeCounts();
     }
-    //TODO:取消点赞回答的评论
     @Override
     public Integer diszanAnswerComment(String token, String commentId) {
         String openid = redisService.findOpenidByToken(token);
@@ -331,4 +344,42 @@ public class AnswerServiceImpl implements AnswerService {
         return true;
     }
 
+    @Transactional
+    @Override
+    public Boolean collectAnswer(String token, String answerId){
+        String openid = redisService.findOpenidByToken(token);
+        //简单判断token是否出现过期
+        if(StringUtils.isEmpty(openid)){
+            throw new MyException(AuthErrorEnum.TOKEN_NOT_FIND);
+        }
+        String userId = userMapper.selectUserIdByOpenId(openid);
+        if(StringUtils.isEmpty(answerId)){
+            throw new MyException(QuestionErrorEnum.ANSWER_ID_NULL);
+        }
+        //判断是否点过赞
+        if(collectAnswerMapper.countAnswerCollect(userId,answerId)==0){
+            CollectAnswer collectAnswer = new CollectAnswer(IdUtils.getNewId(),userId,answerId);
+            collectAnswerMapper.insert(collectAnswer);
+        }
+        return true;
+    }
+    @Transactional
+    @Override
+    public Boolean disCollectAnswer(String token, String answerId){
+        String openid = redisService.findOpenidByToken(token);
+        //简单判断token是否出现过期
+        if(StringUtils.isEmpty(openid)){
+            throw new MyException(AuthErrorEnum.TOKEN_NOT_FIND);
+        }
+        String userId = userMapper.selectUserIdByOpenId(openid);
+        if(StringUtils.isEmpty(answerId)){
+            throw new MyException(QuestionErrorEnum.ANSWER_ID_NULL);
+        }
+        //判断是否点过赞
+        if(collectAnswerMapper.countAnswerCollect(userId,answerId)==0){
+            throw new MyException(QuestionErrorEnum.ANSWER_HASNOT_COLLECT);
+        }
+        collectAnswerMapper.deleteAnswerCollect(userId,answerId);
+        return true;
+    }
 }

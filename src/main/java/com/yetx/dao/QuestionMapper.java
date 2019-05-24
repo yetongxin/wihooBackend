@@ -39,4 +39,6 @@ public interface QuestionMapper {
     @Update("update question set focus_counts=if(focus_counts=0,0,focus_counts-1) where id=#{questionId}")
     int subFocusCounts(@Param("questionId") String questionId);
 
+    @Select("select q.* from question q inner join focus_question f on f.question_id=q.id where f.user_id=#{userId}")
+    List<Question> selectFocusQuestion(@Param("userId") String userId);
 }

@@ -12,6 +12,10 @@
   <sql id="Base_Column_List" >
     id, article_id, content, create_time
   </sql>
+  <delete id="deleteTagByArticleId" parameterType="java.lang.String" >
+    delete from tag
+    where article_id = #{articleId,jdbcType=VARCHAR}
+  </delete>
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
     select 
     <include refid="Base_Column_List" />

@@ -50,7 +50,7 @@ public class UserController {
             return ResultVOUtils.success(updateres);
         return ResultVOUtils.fail();
     }
-    @RequestMapping(value = "/avatar",method = RequestMethod.PUT)
+    @RequestMapping(value = "/avatar",method = RequestMethod.POST)
     public ResultVO changeAvatar(@RequestHeader("token") String token, @RequestParam("file") MultipartFile[] files){
 
         String updateres = userService.updateAvatar(token,files);
@@ -91,5 +91,13 @@ public class UserController {
                                    @RequestParam("pageSize")Integer pageSize){
         PageVO pageVO = userService.findAllAnswer(token,staPage,pageSize);
         return ResultVOUtils.success(pageVO);
+    }
+    @GetMapping("/collectAnswer")
+    public ResultVO queryCollectAnswer(@RequestHeader("token") String token){
+        return ResultVOUtils.success(userService.findAllCollectAnswer(token));
+    }
+    @GetMapping("/focusQuestion")
+    public ResultVO queryFocusQuestion(@RequestHeader("token") String token){
+        return ResultVOUtils.success(userService.findAllFocusQuestion(token));
     }
 }

@@ -12,6 +12,13 @@ public class ResultVOUtils {
         resultVO.setMsg("成功");
         return resultVO;
     }
+    public static ResultVO success(Object data,ErrorEnum statusEnum){
+        ResultVO resultVO = new ResultVO();
+        resultVO.setData(data);
+        resultVO.setCode(statusEnum.getCode());
+        resultVO.setMsg(statusEnum.getMsg());
+        return resultVO;
+    }
     public static ResultVO fail(){
         ResultVO resultVO = new ResultVO();
         resultVO.setData(null);

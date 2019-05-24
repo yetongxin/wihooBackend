@@ -25,6 +25,8 @@ public class GlobalExceptionHandler {
     @ResponseBody
     public ResultVO unknownException(Exception e){
         logger.error("出现未知异常：{}",e);
-        return ResultVOUtils.fail(-1,"未知异常,请联系我们");
+//        return ResultVOUtils.fail(-1,"未知异常,请联系我们");
+        return ResultVOUtils.fail(-1,e.getMessage());
+
     }
 }

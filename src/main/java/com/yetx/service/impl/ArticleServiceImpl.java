@@ -2,22 +2,26 @@ package com.yetx.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yetx.constant.CommentType;
 import com.yetx.dao.*;
 
+import com.yetx.dto.ArticleDTO;
 import com.yetx.dto.CommentDTO;
-import com.yetx.enums.ArticleErrorEnum;
-import com.yetx.enums.CommentErrorEnum;
-import com.yetx.enums.UserErrorEnum;
+import com.yetx.enums.*;
 import com.yetx.exception.MyException;
 import com.yetx.pojo.*;
 
 import com.yetx.service.ArticleService;
 import com.yetx.service.RedisService;
+import com.yetx.utils.IdUtils;
 import com.yetx.vo.ArticleVO;
 import com.yetx.vo.CommentVO;
+import com.yetx.vo.DraftVO;
 import com.yetx.vo.PageVO;
+import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.stereotype.Service;
@@ -42,6 +46,19 @@ public class ArticleServiceImpl implements ArticleService {
     private LikeArticleMapper likeArticleMapper;
     @Autowired
     private CommentMapper commentMapper;
+    @Autowired
+    private TagMapper tagMapper;
+
+    @Override
+    public DraftVO findUserDraft(String token) {
+        String openid = redisService.findOpenidByToken(token);
+        if(StringUtils.isEmpty(openid))
+            throw new MyException(AuthErrorEnum.TOKEN_NOT_FIND);
+        String userId = userMapper.selectUserIdByOpenId(openid);
+        return articleMapper.selectDraftByUserId(userId);
+
+    }
+
     @Override
     public PageVO findAllArticleByPopularity(int staPage,int pageSize) {
 
@@ -72,8 +89,9 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     public Article saveArticle(String token, Article article) {
         String openid = redisService.findOpenidByToken(token);
+        String userId = userMapper.selectUserIdByOpenId(openid);
         //简单判断是否合法
-        if(StringUtils.isEmpty(openid))
+        if(StringUtils.isEmpty(openid)||StringUtils.isEmpty(userId))
             throw new MyException(UserErrorEnum.TOKEN_NOT_FIND);
 
 
@@ -81,7 +99,7 @@ public class ArticleServiceImpl implements ArticleService {
         Article articleRes = new Article();
         if(article.getId()==null){
             article.setId(UUID.randomUUID().toString());
-            article.setOpenid(openid);
+            article.setUserId(userId);
             article.setCollectCounts(0);
             article.setLikeCounts(0);
             articleMapper.insert(article);
@@ -91,13 +109,92 @@ public class ArticleServiceImpl implements ArticleService {
         //存在则更新
         else {
             Article articleDB = articleMapper.selectByPrimaryKey(article.getId());
-            if(articleDB==null||!articleDB.getOpenid().equals(openid))
-                throw new MyException(ArticleErrorEnum.ARTICLE_UPLOAD_WITH_ERROR_OPENID);
+            if(articleDB==null||!articleDB.getUserId().equals(userId))
+                throw new MyException(ArticleErrorEnum.ARTICLE_UPLOAD_WITH_ERROR_USERID);
             articleMapper.updateByPrimaryKeySelective(article);
             articleRes = articleMapper.selectByPrimaryKey(article.getId());
         }
         return articleRes;
     }
+    @Transactional
+    @Override
+    public Boolean uploadArticle(String token, ArticleDTO articleDTO) {
+        String openid = redisService.findOpenidByToken(token);
+        if(StringUtils.isEmpty(openid))
+            throw new MyException(UserErrorEnum.TOKEN_NOT_FIND);
+        String userId = userMapper.selectUserIdByOpenId(openid);
+        //简单判断是否合法
+        if(StringUtils.isEmpty(userId))
+            throw new MyException(UserErrorEnum.TOKEN_NOT_FIND);
+        if(StringUtils.isEmpty(articleDTO.getContent())||StringUtils.isEmpty(articleDTO.getTitle())||
+                StringUtils.isEmpty(articleDTO.getCover())|| articleDTO.getStatus()==null)
+            throw new MyException(ArticleErrorEnum.UPLOAD_PARAMS_ERROR);
+
+        //不存在
+        Article article = new Article();
+        String articleId = IdUtils.getNewId();
+        article.setId(articleId);article.setUserId(userId);
+        article.setLikeCounts(0);article.setCollectCounts(0);
+        article.setTitle(articleDTO.getTitle());
+        article.setCover(articleDTO.getCover());
+        article.setContent(articleDTO.getContent());
+        article.setStatus(articleDTO.getStatus());
+        //TODO 未来文章可添加tags:
+//        if(articleDTO.getTags()!=null) {
+//            for (String str : articleDTO.getTags()) {
+//                Tag tag = new Tag(IdUtils.getNewId(), articleId, str);
+//                tagMapper.insert(tag);
+//            }
+//        }
+        articleMapper.insert(article);
+        Article articleRes = articleMapper.selectByPrimaryKey(articleId);
+
+        //TODO 这里改成true false OK了
+        if(articleRes!=null)    return true;
+        else return false;
+
+
+
+    }
+
+    //TODO: update标签
+    @Override
+    public Boolean updateArticle(String token, ArticleDTO articleDTO){
+        String openid = redisService.findOpenidByToken(token);
+        String userId = userMapper.selectUserIdByOpenId(openid);
+        if(StringUtils.isEmpty(userId)){
+            throw new MyException(UserErrorEnum.TOKEN_NOT_FIND);
+        }
+        if(StringUtils.isEmpty(articleDTO.getId())){
+            throw new MyException(ArticleErrorEnum.UPLOAD_ARTICLEID_NULL);
+        }
+        Article articleDB = articleMapper.selectByPrimaryKey(articleDTO.getId());
+        if(articleDB==null){
+            throw new MyException(ArticleErrorEnum.ARTICLEID_NOT_FIND);
+        }
+        Article article = new Article();
+        article.setId(articleDTO.getId());
+        article.setStatus(articleDTO.getStatus());
+        article.setContent(articleDTO.getContent());
+        article.setTitle(articleDTO.getTitle());
+        article.setCover(articleDTO.getCover());
+
+        //TODO: 未来可添加TAGS
+//        List<String> tags = articleDTO.getTags();
+//        if(articleDTO.getTags()!=null){
+//            tagMapper.deleteTagByArticleId(articleDTO.getId());
+//            for(String str:tags){
+//                Tag tag = new Tag(IdUtils.getNewId(),articleDTO.getId(),str);
+//                tagMapper.insert(tag);
+//            }
+//        }
+
+        articleMapper.updateByPrimaryKeySelective(article);
+//        if(articleDB.getOpenid())
+        return true;
+
+    }
+
     @Transactional
     @Override
     public Boolean deleteArticle(String token, String articleId){
@@ -108,6 +205,7 @@ public class ArticleServiceImpl implements ArticleService {
         if(StringUtils.isEmpty(articleId))
             throw new MyException(ArticleErrorEnum.ARTICLEID_NULL);
         articleMapper.deleteByPrimaryKey(articleId);
+        tagMapper.deleteTagByArticleId(articleId);
         return true;
     }
     @Transactional
@@ -156,25 +254,45 @@ public class ArticleServiceImpl implements ArticleService {
         return false;
     }
 
+    //TODO:修改该commentArticle
     @Transactional
     @Override
     public String commentArticle(String token, CommentDTO articleComment) {
         String openid = redisService.findOpenidByToken(token);
+        String userId = userMapper.selectUserIdByOpenId(openid);
+        if(StringUtils.isEmpty(userId))
+            throw new MyException(UserErrorEnum.TOKEN_NOT_FIND);
         //简单判断是否合法
         if(StringUtils.isEmpty(openid))
             throw new MyException(UserErrorEnum.TOKEN_NOT_FIND);
         if(articleComment==null)
             throw new MyException(CommentErrorEnum.COMMENT_NULL);
-        String userId = userMapper.selectByOpenid(openid).getId();
-        String articleCommentId = UUID.randomUUID().toString().replace("-","");
 
+        if(StringUtils.isEmpty(articleComment.getContent()))
+            throw new MyException(QuestionErrorEnum.COMMENT_CONTENT_NULL);
+        String articleCommentId = UUID.randomUUID().toString().replace("-","");
+        String toUid = "";
+        if(articleComment.getType()== CommentType.ARTICLE_COM){
+            Article article = articleMapper.selectByPrimaryKey(articleComment.getId());
+            if(article==null)
+                throw new MyException(QuestionErrorEnum.COMMENT_TYPE_ID_NOTMATCH);
+            toUid = article.getUserId();
+        }
+        else if(articleComment.getType()==CommentType.ARTICLE_SUB_COM){
+            Comment comment2 = commentMapper.selectByPrimaryKey(articleComment.getId());
+            if(comment2==null)
+                throw new MyException(QuestionErrorEnum.COMMENT_TYPE_ID_NOTMATCH);
+            if(StringUtils.isEmpty(articleComment.getToUid()))//TODO:最好验证这个toUid是否真实存在
+                throw new MyException(QuestionErrorEnum.COMMENT_TOUID_NOT_FOUNT);
+            toUid = articleComment.getToUid();
+        }
         Comment comment = new Comment();
         comment.setId(articleCommentId);
         comment.setLikeCounts(0);
         comment.setParentType(articleComment.getType());//设置为文章类型的评论
         comment.setContent(articleComment.getContent());
-        comment.setFromUid(articleComment.getFromUid());
-        comment.setToUid(articleComment.getToUid());
+        comment.setFromUid(userId);
+        comment.setToUid(toUid);
         comment.setParentId(articleComment.getId());
         commentMapper.insert(comment);
         return articleCommentId;

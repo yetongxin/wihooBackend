@@ -14,13 +14,15 @@ public enum QuestionErrorEnum implements ErrorEnum{
     ANSWER_CONTENT_NULL(583,"answer内容为空"),
     ANSWER_QUESID_NULL(584,"answer无对应的问题id"),
     ANSWER_UPLOAD_STATUS_ERROR(585,"answer的status超出范围"),
+    ANSWER_HASNOT_COLLECT(586,"该回答未被收藏过"),
 
     COMMENT_TYPE_ID_NOTMATCH(590,"comment_type and input id不匹配"),
     COMMENT_FROMUID_NOWUID_NOTMATCH(591,"comment_fromUid and now userId不匹配"),
     COMMENT_TYPE_OOR(592,"comment_type不在许可范围内"),
     COMMENT_HAVE_DELETED(593,"comment已被删除"),
     COMMENT_FOR_NOT_FOUND(594,"找不到对应的评论主体"),
-    COMMENT_TOUID_NOT_FOUNT(595,"touid找不到对应用户")
+    COMMENT_TOUID_NOT_FOUNT(595,"touid找不到对应用户"),
+    COMMENT_CONTENT_NULL(596,"content为空")
     ;
     private final Integer code;
     private final String msg;

@@ -9,9 +9,11 @@ public class Article {
     private String id;
 
     @JsonIgnore
-    private String openid;
+    private String userId;
 
     private String title;
+
+    private String content;
 
     private String cover;
 
@@ -24,11 +26,10 @@ public class Article {
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
-    private String content;
 
     public Article(String id, String openid, String title, String cover, Integer status, Integer likeCounts, Integer collectCounts, Date createTime, String content) {
         this.id = id;
-        this.openid = openid;
+        this.userId = openid;
         this.title = title;
         this.cover = cover;
         this.status = status;
@@ -50,12 +51,12 @@ public class Article {
         this.id = id == null ? null : id.trim();
     }
 
-    public String getOpenid() {
-        return openid;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setOpenid(String openid) {
-        this.openid = openid == null ? null : openid.trim();
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getTitle() {
@@ -118,7 +119,7 @@ public class Article {
     public String toString() {
         return "Article{" +
                 "id='" + id + '\'' +
-                ", openid='" + openid + '\'' +
+                ", userId='" + userId + '\'' +
                 ", title='" + title + '\'' +
                 ", cover='" + cover + '\'' +
                 ", status=" + status +

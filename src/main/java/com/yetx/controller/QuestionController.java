@@ -56,7 +56,7 @@ public class QuestionController {
     public ResultVO focusQuestion(@RequestHeader("token")String token,@RequestParam String questionId){
         return ResultVOUtils.success(questionService.focusQuestion(token,questionId));
     }
-    @DeleteMapping("/disfocus")
+    @DeleteMapping("/focus")
     public ResultVO disFocusQuestion(@RequestHeader("token")String token,@RequestParam String questionId){
         return ResultVOUtils.success(questionService.disFocusQuestion(token,questionId));
     }

@@ -47,13 +47,13 @@ public class AnswerController {
                                  @RequestParam("answerId")String answerId){
         return ResultVOUtils.success(answerService.deleteAnswer(token,answerId));
     }
-    @PutMapping("/zan")
+    @PostMapping("/zan")
     public ResultVO zanAnswer(@RequestHeader("token")String token,
                               @RequestParam("answerId")String answerId){
         return ResultVOUtils.success(answerService.zanAnswer(token,answerId));
     }
     @DeleteMapping("/zan")
-    public ResultVO diszanAnswer(@RequestHeader("token")String token,
+    public ResultVO disZanAnswer(@RequestHeader("token")String token,
                                  @RequestParam("answerId")String answerId){
         return ResultVOUtils.success(answerService.diszanAnswer(token,answerId));
     }
@@ -74,15 +74,24 @@ public class AnswerController {
                                   @RequestParam("commentId")String commentId){
         return ResultVOUtils.success(answerService.deleteComment(token,commentId));
     }
-    @PutMapping("/comment/zan")
+    @PostMapping("/comment/zan")
     public ResultVO zanAnswerComment(@RequestHeader("token")String token,
                               @RequestParam("commentId")String commentId){
         return ResultVOUtils.success(answerService.zanAnswerComment(token,commentId));
     }
-    @DeleteMapping("/comment/diszan")
-    public ResultVO diszanAnswerComment(@RequestHeader("token")String token,
+    @DeleteMapping("/comment/zan")
+    public ResultVO disZanAnswerComment(@RequestHeader("token")String token,
                                  @RequestParam("commentId")String commentId){
         return ResultVOUtils.success(answerService.diszanAnswerComment(token,commentId));
     }
-
+    @PostMapping("/collect")
+    public ResultVO collectAnswer(@RequestHeader("token")String token,
+                                  @RequestParam("answerId")String answerId){
+        return ResultVOUtils.success(answerService.collectAnswer(token,answerId));
+    }
+    @DeleteMapping("/collect")
+    public ResultVO disCollectAnswer(@RequestHeader("token")String token,
+                                     @RequestParam("answerId")String answerId){
+        return ResultVOUtils.success(answerService.disCollectAnswer(token,answerId));
+    }
 }

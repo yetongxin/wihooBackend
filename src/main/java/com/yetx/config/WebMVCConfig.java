@@ -22,11 +22,15 @@ public class WebMVCConfig extends WebMvcConfigurationSupport {
 
     @Value("${avatar.space}")
     private String avatarSpace;
+    @Value("${img.space}")
+    private String imgSpace;
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         System.out.println("头像地址："+avatarSpace);
         registry.addResourceHandler("/images/**").addResourceLocations("file:"+avatarSpace+"/");
         registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
+        registry.addResourceHandler("/imgsave/**").addResourceLocations("file:"+imgSpace+"/");
     }
     //注册拦截器
     @Bean
@@ -36,7 +40,7 @@ public class WebMVCConfig extends WebMvcConfigurationSupport {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-
+        //TODO 最后设置下TOKEN校验
         //设置（模糊）匹配的url
         List<String> urlPatterns = new ArrayList<>();
         urlPatterns.add("/user/**");
@@ -44,7 +48,8 @@ public class WebMVCConfig extends WebMvcConfigurationSupport {
 
 //        urlPatterns.add("/api/v1/userinfo/*");
 
-        registry.addInterceptor(tokenInterceptor()).addPathPatterns(urlPatterns)
+        registry.addInterceptor(tokenInterceptor())
+                .addPathPatterns(urlPatterns)
                 .excludePathPatterns("/user/login")
                 .excludePathPatterns("/article/*")
                 .excludePathPatterns("/question/all/time","/question/user","/question/search");

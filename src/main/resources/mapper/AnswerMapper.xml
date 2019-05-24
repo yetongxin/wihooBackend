@@ -8,6 +8,7 @@
       <arg column="user_id" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="like_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
       <arg column="comment_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="status" jdbcType="INTEGER" javaType="java.lang.Integer" />
       <arg column="create_time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
     </constructor>
   </resultMap>
@@ -18,12 +19,13 @@
       <arg column="user_id" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="like_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
       <arg column="comment_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="status" jdbcType="INTEGER" javaType="java.lang.Integer" />
       <arg column="create_time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
       <arg column="content" jdbcType="LONGVARCHAR" javaType="java.lang.String" />
     </constructor>
   </resultMap>
   <sql id="Base_Column_List" >
-    id, question_id, user_id, like_counts, comment_counts, create_time
+    id, question_id, user_id, like_counts, comment_counts, status, create_time
   </sql>
   <sql id="Blob_Column_List" >
     content
@@ -42,11 +44,11 @@
   </delete>
   <insert id="insert" parameterType="com.yetx.pojo.Answer" >
     insert into answer (id, question_id, user_id, 
-      like_counts, comment_counts, create_time, 
-      content)
+      like_counts, comment_counts, status, 
+      create_time, content)
     values (#{id,jdbcType=VARCHAR}, #{questionId,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, 
-      #{likeCounts,jdbcType=INTEGER}, #{commentCounts,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}, 
-      #{content,jdbcType=LONGVARCHAR})
+      #{likeCounts,jdbcType=INTEGER}, #{commentCounts,jdbcType=INTEGER}, #{status,jdbcType=INTEGER}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{content,jdbcType=LONGVARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.yetx.pojo.Answer" >
     insert into answer
@@ -65,6 +67,9 @@
       </if>
       <if test="commentCounts != null" >
         comment_counts,
+      </if>
+      <if test="status != null" >
+        status,
       </if>
       <if test="createTime != null" >
         create_time,
@@ -89,6 +94,9 @@
       <if test="commentCounts != null" >
         #{commentCounts,jdbcType=INTEGER},
       </if>
+      <if test="status != null" >
+        #{status,jdbcType=INTEGER},
+      </if>
       <if test="createTime != null" >
         #{createTime,jdbcType=TIMESTAMP},
       </if>
@@ -112,6 +120,9 @@
       <if test="commentCounts != null" >
         comment_counts = #{commentCounts,jdbcType=INTEGER},
       </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=INTEGER},
+      </if>
       <if test="createTime != null" >
         create_time = #{createTime,jdbcType=TIMESTAMP},
       </if>
@@ -127,6 +138,7 @@
       user_id = #{userId,jdbcType=VARCHAR},
       like_counts = #{likeCounts,jdbcType=INTEGER},
       comment_counts = #{commentCounts,jdbcType=INTEGER},
+      status = #{status,jdbcType=INTEGER},
       create_time = #{createTime,jdbcType=TIMESTAMP},
       content = #{content,jdbcType=LONGVARCHAR}
     where id = #{id,jdbcType=VARCHAR}
@@ -137,6 +149,7 @@
       user_id = #{userId,jdbcType=VARCHAR},
       like_counts = #{likeCounts,jdbcType=INTEGER},
       comment_counts = #{commentCounts,jdbcType=INTEGER},
+      status = #{status,jdbcType=INTEGER},
       create_time = #{createTime,jdbcType=TIMESTAMP}
     where id = #{id,jdbcType=VARCHAR}
   </update>

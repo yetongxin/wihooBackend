@@ -5,6 +5,7 @@ import com.yetx.dto.CommentDTO;
 import com.yetx.pojo.Answer;
 import com.yetx.vo.CommentVO;
 import com.yetx.vo.PageVO;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -17,7 +18,8 @@ public interface AnswerService {
     //按时间排序展示回答
     public PageVO findAllAnswersOrderByTime(String questionId, Integer staPage, Integer pageSize);
 
-    //展示所有回答
+
+    //展示所有回答的评论
     public List<CommentVO> findCommentsByAnswerId(String answerId);
     /**
      * 上传修改回答，这里的upload仅限于第一次上传与修改状态或者内容，允许传部分空值
@@ -80,4 +82,7 @@ public interface AnswerService {
      */
     public Integer diszanAnswerComment(String token, String commentId);
 
+    Boolean collectAnswer(String token, String answerId);
+
+    Boolean disCollectAnswer(String token, String answerId);
 }
