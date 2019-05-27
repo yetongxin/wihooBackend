@@ -21,7 +21,7 @@ public class ArticleDTO {
     public ArticleDTO() {
     }
 
-    public ArticleDTO(String id, String title, String content, String cover, Integer status, List<String> tags) {
+    public ArticleDTO(String id, String title, String content, String cover, Integer status) {
         this.id = id;
         this.title = title;
         this.content = content;

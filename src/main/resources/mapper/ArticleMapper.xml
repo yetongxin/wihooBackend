@@ -104,7 +104,12 @@
   <select id="selectByPopularity" resultMap="ArticleVOMap2" parameterType="java.lang.String" >
   select a.id,a.title,a.cover,a.status,a.like_counts,a.collect_counts,a.content,a.create_time,u.nickname,u.avatar
   from article a left join user u on a.user_id=u.id
-  where status=1 order by like_counts,collect_counts desc
+  where a.status=1 order by like_counts desc
+  </select>
+  <select id="selectByTime" resultMap="ArticleVOMap2" parameterType="java.lang.String" >
+  select a.id,a.title,a.cover,a.status,a.like_counts,a.collect_counts,a.content,a.create_time,u.nickname,u.avatar
+  from article a left join user u on a.user_id=u.id
+  where a.status=1 order by a.create_time desc
   </select>
 
   <!--有点问题的分页-->

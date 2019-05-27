@@ -24,13 +24,15 @@ public class WebMVCConfig extends WebMvcConfigurationSupport {
     private String avatarSpace;
     @Value("${img.space}")
     private String imgSpace;
-
+    @Value("${bgimg.space}")
+    private String bgImgSpace;
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         System.out.println("头像地址："+avatarSpace);
         registry.addResourceHandler("/images/**").addResourceLocations("file:"+avatarSpace+"/");
         registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
         registry.addResourceHandler("/imgsave/**").addResourceLocations("file:"+imgSpace+"/");
+        registry.addResourceHandler("/bgimg/**").addResourceLocations("file:"+bgImgSpace+"/");//将bgimg/映射到bgimagespace/
     }
     //注册拦截器
     @Bean
@@ -52,7 +54,7 @@ public class WebMVCConfig extends WebMvcConfigurationSupport {
                 .addPathPatterns(urlPatterns)
                 .excludePathPatterns("/user/login")
                 .excludePathPatterns("/article/*")
-                .excludePathPatterns("/question/all/time","/question/user","/question/search");
+                .excludePathPatterns("/question/all/time","/question/all/popu","/question/user","/question/search");
 
         super.addInterceptors(registry);
     }

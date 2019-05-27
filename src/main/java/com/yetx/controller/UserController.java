@@ -50,7 +50,7 @@ public class UserController {
             return ResultVOUtils.success(updateres);
         return ResultVOUtils.fail();
     }
-    @RequestMapping(value = "/avatar",method = RequestMethod.POST)
+    @RequestMapping(value = "/avatar",method = RequestMethod.PUT)
     public ResultVO changeAvatar(@RequestHeader("token") String token, @RequestParam("file") MultipartFile[] files){
 
         String updateres = userService.updateAvatar(token,files);
@@ -58,7 +58,14 @@ public class UserController {
             return ResultVOUtils.success(updateres);
         return ResultVOUtils.fail();
     }
-
+    @PostMapping("/bgimg")
+    public ResultVO changeBgImg(@RequestHeader("token") String token, @RequestParam("file") MultipartFile[] files){
+        return ResultVOUtils.success(userService.updateBgimg(token,files));
+    }
+    @GetMapping("/other")
+    public ResultVO findOtherUser(@RequestParam("userId")String userId){
+        return ResultVOUtils.success(userService.findOtherUsrByUserId(userId));
+    }
     /**
      * 查看用户的所有关注的人
      * @param token

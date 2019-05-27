@@ -15,6 +15,8 @@ public class User {
 
     private String avatar;
 
+    private String bgimage;
+
     private Integer followCounts;
 
     private Integer fansCounts;
@@ -23,14 +25,17 @@ public class User {
 
     private Integer likeCounts;
 
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    //@JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+
+    @JsonIgnore
     private Date createTime;
 
-    public User(String id, String openid, String nickname, String avatar, Integer followCounts, Integer fansCounts, Integer collectCounts, Integer likeCounts, Date createTime) {
+    public User(String id, String openid, String nickname, String avatar, String bgimage, Integer followCounts, Integer fansCounts, Integer collectCounts, Integer likeCounts, Date createTime) {
         this.id = id;
         this.openid = openid;
         this.nickname = nickname;
         this.avatar = avatar;
+        this.bgimage = bgimage;
         this.followCounts = followCounts;
         this.fansCounts = fansCounts;
         this.collectCounts = collectCounts;
@@ -114,6 +119,14 @@ public class User {
         this.createTime = createTime;
     }
 
+    public String getBgimage() {
+        return bgimage;
+    }
+
+    public void setBgimage(String bgimage) {
+        this.bgimage = bgimage;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -121,6 +134,7 @@ public class User {
                 ", openid='" + openid + '\'' +
                 ", nickname='" + nickname + '\'' +
                 ", avatar='" + avatar + '\'' +
+                ", bgimage='" + bgimage + '\'' +
                 ", followCounts=" + followCounts +
                 ", fansCounts=" + fansCounts +
                 ", collectCounts=" + collectCounts +

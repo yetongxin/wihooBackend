@@ -20,6 +20,7 @@ public interface UserService {
     public User findByOpenid(String openid);
     public String updateNickname(String token,String nickname) throws Exception;
     public String updateAvatar(String token, MultipartFile[] files);
+    public String updateBgimg(String token, MultipartFile[] files);
     /**
      * 查看关注的所有人
      */
@@ -35,4 +36,6 @@ public interface UserService {
     List<Answer> findAllCollectAnswer(String token);
 
     List<Question> findAllFocusQuestion(String token);
+
+    User findOtherUsrByUserId(String userId);
 }

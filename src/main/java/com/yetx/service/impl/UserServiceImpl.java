@@ -73,6 +73,8 @@ public class UserServiceImpl implements UserService {
     private String appsecret;
     @Value("${avatar.space}")
     private String avatarSpace;
+    @Value("${bgimg.space}")
+    private String bgimgSpace;
     private String openid;
     private String session_key;
 
@@ -173,7 +175,7 @@ public class UserServiceImpl implements UserService {
             user.setFollowCounts(0);
             user.setFansCounts(0);
             user.setNickname("null_name");
-            user.setAvatar("null_avatar");
+            user.setAvatar("null_avatar");user.setBgimage("/bgimg/default.jpg");
             user.setLikeCounts(0);
             user.setOpenid(openid);
             user.setCollectCounts(0);
@@ -184,13 +186,18 @@ public class UserServiceImpl implements UserService {
             first = false;
             logger.info("用户已存在");
         }
+
         String skey = UUID.randomUUID().toString();
         JSONObject sessionObj = new JSONObject();
         sessionObj.put( "openid",openid );
         sessionObj.put( "sessionKey",session_key );
         //设置为1天
         redisOperator.set("TOKEN:"+skey,sessionObj.toJSONString(),60*60*24);
-        return new UserLoginStatusVO(skey,first);
+        if(first)
+            return new UserLoginStatusVO(skey,first,null);
+        else
+            return new UserLoginStatusVO(skey,first,user);
+
     }
 //    @Override
 //    @Transactional
@@ -329,6 +336,53 @@ public class UserServiceImpl implements UserService {
         return "";
     }
 
+    @Override
+    public String updateBgimg(String token, MultipartFile[] files) {
+        //定义一个要存储到磁盘的位置
+        String fileSpace = bgimgSpace;
+        String openid = redisService.findOpenidByToken(token);
+        User user = userMapper.selectByOpenid(openid);
+        String PathToDB = "/" + user.getId() + "/bg";
+        //接下来将文件写入服务器磁盘，并将文件的相对路径存入数据库中
+        FileOutputStream fileOutputStream = null;
+        InputStream inputStream = null;
+        try {
+            if (files != null && files.length > 0) {//简单判断是否有文件传输进来
+                String fileName = files[0].getOriginalFilename();
+
+                if (!StringUtils.isEmpty(fileName)) {
+                    String finalPath = fileSpace + PathToDB + "/" + fileName;
+                    PathToDB = PathToDB + "/" + fileName;//将相对路径存储到数据库中,该路径需先加上文件名
+                    File finalFile = new File(finalPath);
+                    if (finalFile.getParentFile() == null || !finalFile.getParentFile().isDirectory()) {
+                        finalFile.getParentFile().mkdirs();//如果该用户是第一次上传，需要创建一个文件夹给他
+                    }
+                    fileOutputStream = new FileOutputStream(finalFile);
+                    inputStream = files[0].getInputStream();
+                    IOUtils.copy(inputStream, fileOutputStream);
+                    PathToDB = "/bgimg"+PathToDB;//资源映射
+                    user.setBgimage(PathToDB);
+                    userMapper.updateByPrimaryKeySelective(user);
+                    return PathToDB;
+                }
+
+            } else {
+                return "";
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    @Override
+    public User findOtherUsrByUserId(String userId) {
+        if(StringUtils.isEmpty(userId))
+            throw new MyException(UserErrorEnum.USER_ID_NULL);
+        return userMapper.selectByPrimaryKey(userId);
+    }
 
     @Override
     public UserDTO findAllFollow(String token) {

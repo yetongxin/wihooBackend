@@ -126,7 +126,8 @@ public class AnswerServiceImpl implements AnswerService {
         answer.setContent(answerDTO.getContent());
         answer.setQuestionId(answerDTO.getQuestionId());
         answerMapper.insert(answer);
-
+        //增加问题热度
+        redisService.addQuestionPopu(answerDTO.getQuestionId());
         return answerMapper.selectByPrimaryKey(answerId);
     }
 
@@ -156,6 +157,8 @@ public class AnswerServiceImpl implements AnswerService {
         answer.setStatus(answerDTO.getStatus());
         answer.setId(answerDTO.getAnswerId());
         answerMapper.updateByPrimaryKeySelective(answer);
+        //增加热度
+        redisService.addQuestionPopu(answer.getQuestionId());
         return answerMapper.selectByPrimaryKey(answerDTO.getAnswerId());
 
     }
@@ -183,6 +186,8 @@ public class AnswerServiceImpl implements AnswerService {
         Question question = questionMapper.selectByPrimaryKey(answer.getQuestionId());
         question.setAnsCounts(question.getAnsCounts()-1);
         questionMapper.updateByPrimaryKeySelective(question);
+        //减少热度
+        redisService.subQuestionPopu(answer.getQuestionId());
         return true;
     }
 
@@ -202,7 +207,10 @@ public class AnswerServiceImpl implements AnswerService {
                     ZanType.ANS_ZAN);
             likeAnswerMapper.insert(likeAnswer);
         }
-        return answerMapper.selectByPrimaryKey(answerId).getLikeCounts();
+        Answer answer = answerMapper.selectByPrimaryKey(answerId);
+        //增加热度
+        redisService.addQuestionPopu(answer.getQuestionId());
+        return answer.getLikeCounts();
     }
 
     @Transactional
@@ -219,7 +227,10 @@ public class AnswerServiceImpl implements AnswerService {
             answerMapper.subLikeCounts(answerId);
             likeAnswerMapper.deleteAnswerZan(userId,answerId);
         }
-        return answerMapper.selectByPrimaryKey(answerId).getLikeCounts();
+        //减少热度
+        Answer answer = answerMapper.selectByPrimaryKey(answerId);
+        redisService.subQuestionPopu(answer.getQuestionId());
+        return answer.getLikeCounts();
     }
 
     //存在两种评论：1.回答的直接评论   2.作为回答评论的子评论
@@ -248,6 +259,8 @@ public class AnswerServiceImpl implements AnswerService {
             toUid = answer.getUserId();
             //如果评论类型是回答，需要在answer表累加一下comment_counts
             answerMapper.addCommentCounts(answer.getId());
+            //增加热度
+            redisService.addQuestionPopu(answer.getQuestionId());
         }
         //第二种评论
         else if(commentDTO.getType() == CommentType.ANSWER_SUB_COM){
@@ -361,6 +374,7 @@ public class AnswerServiceImpl implements AnswerService {
             CollectAnswer collectAnswer = new CollectAnswer(IdUtils.getNewId(),userId,answerId);
             collectAnswerMapper.insert(collectAnswer);
         }
+
         return true;
     }
     @Transactional

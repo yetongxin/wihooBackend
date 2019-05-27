@@ -5,8 +5,10 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 /**
  * @Description: 使用redisTemplate的操作实现类
@@ -17,8 +19,50 @@ public class RedisOperator {
 //	@Autowired
 //    private RedisTemplate<String, Object> redisTemplate;
 
+
     @Autowired
     private StringRedisTemplate redisTemplate;
+
+    @Autowired
+    private RedisTemplate<String,Long> timeRedisTemplate;
+
+
+    //ZSet基本操作
+    public Boolean zAdd(String key, String value, double score){
+        //timeRedisTemplate.opsForValue().getAndSet("qTime:"+key,System.currentTimeMillis());
+        return redisTemplate.opsForZSet().add(key,value,score);
+    }
+    public Double zIncrement(String key, String value, double addNum){
+        //timeRedisTemplate.opsForValue().getAndSet("qTime:"+key,System.currentTimeMillis());
+        return redisTemplate.opsForZSet().incrementScore(key,value,addNum);
+    }
+    public Set<String> zGetTopN(String key, int sta, int end){
+        return redisTemplate.opsForZSet().reverseRange(key,sta,end);
+    }
+    public Long zRemove(String key, String value){
+        //timeRedisTemplate.delete("qTime:"+key);
+        return redisTemplate.opsForZSet().remove(key,value);
+    }
+    public Long zSize(String key){
+        return redisTemplate.opsForZSet().size(key);
+    }
+    public Set<String> zGetAll(String key){
+        return redisTemplate.opsForZSet().reverseRangeByScore(key, 0, Double.MAX_VALUE);
+    }
+
+    public Long getTime(String key){
+        return timeRedisTemplate.opsForValue().get(key);
+    }
+
+    public void setTime(String key,Long value){
+        timeRedisTemplate.opsForValue().set(key,value);
+    }
+    public Boolean removeTime(String key){
+        return timeRedisTemplate.delete(key);
+    }
+    public void deleteTimeNameSpace(String namespace){
+        timeRedisTemplate.delete(timeRedisTemplate.keys(namespace+"*"));
+    }
 
     // Key（键），简单的key-value操作
 

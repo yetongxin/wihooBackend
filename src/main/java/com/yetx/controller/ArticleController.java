@@ -25,10 +25,16 @@ public class ArticleController {
     @Autowired
     private ArticleService articleService;
     @GetMapping("/all/popu")
-    public ResultVO getAllArticle(@RequestParam Integer staPage,@RequestParam Integer pageSize){
+    public ResultVO getAllArticleByPopu(@RequestParam Integer staPage,@RequestParam Integer pageSize){
         PageVO pageVO = articleService.findAllArticleByPopularity(staPage,pageSize);
         return ResultVOUtils.success(pageVO);
     }
+    @GetMapping("/all/time")
+    public ResultVO getAllArticleByTime(@RequestParam Integer staPage,@RequestParam Integer pageSize){
+        PageVO pageVO = articleService.findAllArticleByTime(staPage,pageSize);
+        return ResultVOUtils.success(pageVO);
+    }
+
     @GetMapping("/comments")
     public ResultVO getAllComment(@RequestParam String articleId){
         List<CommentVO> articleComments = articleService.findAllCommentByArticleId(articleId);

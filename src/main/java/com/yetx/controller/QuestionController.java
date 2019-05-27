@@ -31,7 +31,10 @@ public class QuestionController {
     public ResultVO queryAllQuestion(@RequestParam Integer staPage,@RequestParam Integer pageSize){
         return ResultVOUtils.success(questionService.findAllQuestions(staPage,pageSize));
     }
-
+    @GetMapping("/all/popu")
+    public ResultVO queryTopNQuestion(){
+        return ResultVOUtils.success(questionService.findTopNQuestion());
+    }
     @PostMapping("")
     public ResultVO uploadQuestion(@RequestHeader("token")String token, @RequestBody QuestionDTO questionDTO){
         return ResultVOUtils.success(questionService.uploadQuestion(token,questionDTO));

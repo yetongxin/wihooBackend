@@ -23,8 +23,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class QuestionServiceImpl implements QuestionService {
@@ -37,6 +39,7 @@ public class QuestionServiceImpl implements QuestionService {
     @Autowired
     private FocusQuestionMapper focusQuestionMapper;
     private Logger logger = LoggerFactory.getLogger(QuestionServiceImpl.class);
+
 
     @Override
     public PageVO findAllQuestions(Integer staPage, Integer pageSize) {
@@ -78,6 +81,9 @@ public class QuestionServiceImpl implements QuestionService {
         question.setAnsCounts(0);
         question.setStatus(QuestionStatus.ONSHOW);
         questionMapper.insert(question);
+        //上传后即插入redis参与排序
+        if(question.getStatus()==QuestionStatus.ONSHOW)
+            redisService.zaddQuestionId(questionId);
         return questionMapper.selectByPrimaryKey(questionId);
 
 
@@ -102,11 +108,16 @@ public class QuestionServiceImpl implements QuestionService {
             throw new MyException(QuestionErrorEnum.QUESTION_ID_UID_NOTMATCH);
         Question question = new Question();
         question.setId(findQ.getId());
-        question.setTitle(findQ.getTitle());
-        question.setContent(findQ.getContent());
+        question.setTitle(questionDTO.getTitle());
+        question.setContent(questionDTO.getContent());
         questionMapper.updateByPrimaryKeySelective(question);
+        //确认是上传后即插入redis参与排序
+        if(findQ.getStatus()==QuestionStatus.ONSHOW)
+            redisService.addQuestionPopu(findQ.getId());
+        else if(question.getStatus()==QuestionStatus.ONSHOW)
+            redisService.zaddQuestionId(findQ.getId());
         return questionMapper.selectByPrimaryKey(questionDTO.getQuestionId());
-    }
+}
 
     @Transactional
     @Override
@@ -136,6 +147,7 @@ public class QuestionServiceImpl implements QuestionService {
                 questionMapper.updateByPrimaryKeySelective(question);
             }
         }
+        redisService.zdeleteQId(questionId);
         return true;
     }
 
@@ -172,6 +184,8 @@ public class QuestionServiceImpl implements QuestionService {
             questionMapper.addFocusCounts(questionId);
             focusQuestionMapper.insert(new FocusQuestion(IdUtils.getNewId(),userId,questionId));
         }
+        //添加热度
+        redisService.addQuestionPopu(questionId);
         return questionMapper.selectByPrimaryKey(questionId).getFocusCounts();
     }
 
@@ -187,6 +201,8 @@ public class QuestionServiceImpl implements QuestionService {
             questionMapper.subFocusCounts(questionId);
             focusQuestionMapper.deleteUserFocusQues(userId,questionId);
         }
+        //减少热度
+        redisService.subQuestionPopu(questionId);
         return questionMapper.selectByPrimaryKey(questionId).getFocusCounts();
     }
 
@@ -198,5 +214,21 @@ public class QuestionServiceImpl implements QuestionService {
         }
         String userId = userMapper.selectUserIdByOpenId(openid);
         return questionMapper.selectFocusQuestion(userId);
+    }
+
+    @Override
+    public List<Question> findTopNQuestion() {
+        Set<String> set = redisService.getTopNQuestion();
+        if(set==null){
+            return (List<Question>) findAllQuestions(1,20).getCurData();
+        }
+        else {
+            List<Question> questions = new ArrayList<>();
+            for(String str:set){
+                questions.add(questionMapper.selectByPrimaryKey(str));
+            }
+            return  questions;
+        }
+
     }
 }

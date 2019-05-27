@@ -76,7 +76,23 @@ public class ArticleServiceImpl implements ArticleService {
         return pageVO;
 
     }
+    @Override
+    public PageVO findAllArticleByTime(int staPage,int pageSize) {
 
+        PageHelper.startPage(staPage,pageSize);
+        List<ArticleVO> list = articleMapper.selectByTime();
+        PageInfo pageInfo = new PageInfo(list);
+
+        //返回前端需要的PageVO
+        PageVO pageVO = new PageVO();
+        pageVO.setCurData(pageInfo.getList());
+        pageVO.setPageNum(pageInfo.getPages());
+        pageVO.setCurPage(staPage);
+        pageVO.setRecords(pageInfo.getTotal());
+
+        return pageVO;
+
+    }
     @Override
     public List<CommentVO> findAllCommentByArticleId(String articleId) {
         if(StringUtils.isEmpty(articleId))
@@ -118,7 +134,7 @@ public class ArticleServiceImpl implements ArticleService {
     }
     @Transactional
     @Override
-    public Boolean uploadArticle(String token, ArticleDTO articleDTO) {
+    public String uploadArticle(String token, ArticleDTO articleDTO) {
         String openid = redisService.findOpenidByToken(token);
         if(StringUtils.isEmpty(openid))
             throw new MyException(UserErrorEnum.TOKEN_NOT_FIND);
@@ -150,16 +166,15 @@ public class ArticleServiceImpl implements ArticleService {
         Article articleRes = articleMapper.selectByPrimaryKey(articleId);
 
         //TODO 这里改成true false OK了
-        if(articleRes!=null)    return true;
-        else return false;
-
+        if(articleRes!=null)    return articleRes.getId();
+        else return "";
 
 
     }
 
     //TODO: update标签
     @Override
-    public Boolean updateArticle(String token, ArticleDTO articleDTO){
+    public String  updateArticle(String token, ArticleDTO articleDTO){
         String openid = redisService.findOpenidByToken(token);
         String userId = userMapper.selectUserIdByOpenId(openid);
         if(StringUtils.isEmpty(userId)){
@@ -189,9 +204,10 @@ public class ArticleServiceImpl implements ArticleService {
 //            }
 //        }
 
+        //TODO:
         articleMapper.updateByPrimaryKeySelective(article);
 //        if(articleDB.getOpenid())
-        return true;
+        return articleDTO.getId();
 
     }
 

@@ -7,6 +7,7 @@
       <arg column="openid" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="nickname" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="avatar" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="bgimage" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="follow_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
       <arg column="fans_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
       <arg column="collect_counts" jdbcType="INTEGER" javaType="java.lang.Integer" />
@@ -73,7 +74,8 @@
 
   </resultMap>
   <sql id="Base_Column_List" >
-    id, openid, nickname,avatar,follow_counts,fans_counts,collect_counts,like_counts,create_time
+    id, openid, nickname, avatar, bgimage, follow_counts, fans_counts, collect_counts,
+    like_counts, create_time
   </sql>
 
   <select id="selectByOpenid" resultMap="BaseResultMap" parameterType="java.lang.String" >
@@ -125,14 +127,14 @@
     where id = #{id,jdbcType=VARCHAR}
   </delete>
   <insert id="insert" parameterType="com.yetx.pojo.User" >
-    insert into user (id, openid, nickname, 
-      avatar, follow_counts, fans_counts, 
-      collect_counts, like_counts, create_time
-      )
-    values (#{id,jdbcType=VARCHAR}, #{openid,jdbcType=VARCHAR}, #{nickname,jdbcType=VARCHAR}, 
-      #{avatar,jdbcType=VARCHAR}, #{followCounts,jdbcType=INTEGER}, #{fansCounts,jdbcType=INTEGER}, 
-      #{collectCounts,jdbcType=INTEGER}, #{likeCounts,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}
-      )
+    insert into user (id, openid, nickname,
+      avatar, bgimage, follow_counts,
+      fans_counts, collect_counts, like_counts,
+      create_time)
+    values (#{id,jdbcType=VARCHAR}, #{openid,jdbcType=VARCHAR}, #{nickname,jdbcType=VARCHAR},
+      #{avatar,jdbcType=VARCHAR}, #{bgimage,jdbcType=VARCHAR}, #{followCounts,jdbcType=INTEGER},
+      #{fansCounts,jdbcType=INTEGER}, #{collectCounts,jdbcType=INTEGER}, #{likeCounts,jdbcType=INTEGER},
+      #{createTime,jdbcType=TIMESTAMP})
   </insert>
   <insert id="insertSelective" parameterType="com.yetx.pojo.User" >
     insert into user
@@ -148,6 +150,9 @@
       </if>
       <if test="avatar != null" >
         avatar,
+      </if>
+      <if test="bgimage != null" >
+        bgimage,
       </if>
       <if test="followCounts != null" >
         follow_counts,
@@ -178,6 +183,9 @@
       <if test="avatar != null" >
         #{avatar,jdbcType=VARCHAR},
       </if>
+      <if test="bgimage != null" >
+        #{bgimage,jdbcType=VARCHAR},
+      </if>
       <if test="followCounts != null" >
         #{followCounts,jdbcType=INTEGER},
       </if>
@@ -207,6 +215,9 @@
       <if test="avatar != null" >
         avatar = #{avatar,jdbcType=VARCHAR},
       </if>
+      <if test="bgimage != null" >
+        bgimage = #{bgimage,jdbcType=VARCHAR},
+      </if>
       <if test="followCounts != null" >
         follow_counts = #{followCounts,jdbcType=INTEGER},
       </if>
@@ -230,6 +241,7 @@
     set openid = #{openid,jdbcType=VARCHAR},
       nickname = #{nickname,jdbcType=VARCHAR},
       avatar = #{avatar,jdbcType=VARCHAR},
+      bgimage = #{bgimage,jdbcType=VARCHAR},
       follow_counts = #{followCounts,jdbcType=INTEGER},
       fans_counts = #{fansCounts,jdbcType=INTEGER},
       collect_counts = #{collectCounts,jdbcType=INTEGER},

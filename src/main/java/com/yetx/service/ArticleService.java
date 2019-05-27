@@ -19,6 +19,8 @@ public interface ArticleService {
 
     public PageVO findAllArticleByPopularity(int staPage,int pageSize);
 
+    PageVO findAllArticleByTime(int staPage, int pageSize);
+
     public List<CommentVO> findAllCommentByArticleId(String articleId);
 
     /*
@@ -34,10 +36,10 @@ public interface ArticleService {
      */
     public Article saveArticle(String token,Article article);
 
-    Boolean uploadArticle(String token, ArticleDTO article);
+    String uploadArticle(String token, ArticleDTO article);
 
     //TODO: 修改article表中的openid字段为userId
-    Boolean updateArticle(String token, ArticleDTO articleDTO);
+    String updateArticle(String token, ArticleDTO articleDTO);
 
     /**
      * 删除文章

@@ -30,6 +30,13 @@
     <sql id="Blob_Column_List" >
     content
   </sql>
+    
+    <select id="selectByIdSet" resultMap="ResultMapWithBLOBs" parameterType="java.util.Set" >
+      select * from question where id in
+        <foreach collection="idSet" open="(" separator="," close=")" item="qId">
+        #{qId}
+        </foreach>
+    </select>
     <select id="selectByKeyWords" resultMap="ResultMapWithBLOBs">
         SELECT * FROM  question WHERE 1>2 OR
         <foreach collection="keywords" item="item" index="index"  separator="OR">

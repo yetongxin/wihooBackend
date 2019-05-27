@@ -35,9 +35,9 @@ public interface ArticleMapper {
     DraftVO selectDraftByUserId(@Param("userId") String userId);
 
     List<ArticleVO> selectByPopularity();
+    List<ArticleVO> selectByTime();
 
 
     ArticleVO selectVOByArticleId(@Param("articleId")String articleId);
-
 
 }

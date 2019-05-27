@@ -9,11 +9,11 @@ import java.util.List;
 
 public interface QuestionService {
 
+    //这个是按时间查找的
     public PageVO findAllQuestions(Integer staPage, Integer pageSize);
 
     public Question uploadQuestion(String token, QuestionDTO questionDTO);
 
-    @Transactional
     Question updateQuestion(String token, QuestionDTO questionDTO);
 
     public Boolean deleteQuestion(String token, String questionId);
@@ -27,4 +27,7 @@ public interface QuestionService {
     public Integer disFocusQuestion(String token, String questionId);
 
     List<Question> findAllfocusQuestion(String token);
+
+    //这个靠redis查找的
+    List<Question> findTopNQuestion();
 }

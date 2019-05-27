@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface QuestionMapper {
@@ -41,4 +42,7 @@ public interface QuestionMapper {
 
     @Select("select q.* from question q inner join focus_question f on f.question_id=q.id where f.user_id=#{userId}")
     List<Question> selectFocusQuestion(@Param("userId") String userId);
+
+    List<Question> selectByIdSet(@Param("idSet") Set<String> idSet);
+
 }
