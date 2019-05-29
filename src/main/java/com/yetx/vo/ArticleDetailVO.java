@@ -18,6 +18,8 @@ public class ArticleDetailVO {
 
     private Date createTime;
 
+    private String userId;
+
     private String nickname;
 
     private String avatar;
@@ -40,6 +42,7 @@ public class ArticleDetailVO {
         this.createTime = articleVO.getCreateTime();
         this.nickname = articleVO.getNickname();
         this.avatar = articleVO.getAvatar();
+        this.userId = articleVO.getUserId();
         this.comments = null;
         this.hasZan = false;
         this.hasCollect = false;
@@ -167,5 +170,13 @@ public class ArticleDetailVO {
 
     public Boolean getHasFollow() {
         return hasFollow;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }

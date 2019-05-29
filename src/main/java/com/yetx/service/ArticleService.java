@@ -72,6 +72,8 @@ public interface ArticleService {
      */
     Integer zanArticle(String token, String articleId);
 
+    Integer zanArticleComment(String token, String commentId);
+
     /**
      * 取消赞
      */

@@ -10,6 +10,7 @@ import com.yetx.dto.UserDTO;
 import com.yetx.enums.AuthErrorEnum;
 import com.yetx.enums.UserErrorEnum;
 import com.yetx.exception.MyException;
+import com.yetx.pojo.CollectAnswer;
 import com.yetx.pojo.Question;
 import com.yetx.pojo.User;
 import com.yetx.pojo.UserFan;
@@ -575,9 +576,16 @@ public class UserServiceImpl implements UserService {
         List<AnswerVO> list = answerMapper.selectByUserId(userId);
         PageInfo pageInfo = new PageInfo(list);
 
+        //未来改成表连接
+        List<AnswerVO> answerVOList = pageInfo.getList();
+        List<CollectAnswerVO> collectAnswerList = new ArrayList<>();
+        for(AnswerVO answerVO :answerVOList){
+            Question question = questionMapper.selectByPrimaryKey(answerVO.getQuestionId());
+            collectAnswerList.add(new CollectAnswerVO(question.getId(),question.getTitle(),answerVO));
+        }
         //返回前端需要的PageVO
         PageVO pageVO = new PageVO();
-        pageVO.setCurData(pageInfo.getList());
+        pageVO.setCurData(collectAnswerList);
         pageVO.setPageNum(pageInfo.getPages());
         pageVO.setCurPage(staPage);
         pageVO.setRecords(pageInfo.getTotal());

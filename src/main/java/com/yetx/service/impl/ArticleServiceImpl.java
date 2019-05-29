@@ -315,13 +315,13 @@ public class ArticleServiceImpl implements ArticleService {
             throw new MyException(QuestionErrorEnum.COMMENT_CONTENT_NULL);
         String articleCommentId = UUID.randomUUID().toString().replace("-","");
         String toUid = "";
-        if(articleComment.getType()== CommentType.ARTICLE_COM){
+        if(articleComment.getType()== CommentType.ARTICLE_COM){//直接评论文章
             Article article = articleMapper.selectByPrimaryKey(articleComment.getId());
             if(article==null)
                 throw new MyException(QuestionErrorEnum.COMMENT_TYPE_ID_NOTMATCH);
             toUid = article.getUserId();
         }
-        else if(articleComment.getType()==CommentType.ARTICLE_SUB_COM){
+        else if(articleComment.getType()==CommentType.ARTICLE_SUB_COM){//评论 评论
             Comment comment2 = commentMapper.selectByPrimaryKey(articleComment.getId());
             if(comment2==null)
                 throw new MyException(QuestionErrorEnum.COMMENT_TYPE_ID_NOTMATCH);
@@ -380,6 +380,16 @@ public class ArticleServiceImpl implements ArticleService {
         likeArticleDB.setUserId(user.getId());
         likeArticleMapper.insert(likeArticleDB);
         return article.getLikeCounts();
+    }
+    @Transactional
+    @Override
+    public Integer zanArticleComment(String token, String commentId){
+        String openid = redisService.findOpenidByToken(token);
+        //简单判断是否合法
+        if(StringUtils.isEmpty(openid))
+            throw new MyException(AuthErrorEnum.TOKEN_NOT_FIND);
+        String userId = userMapper.selectUserIdByOpenId(openid);
+        return 0;
     }
     @Transactional
     @Override
