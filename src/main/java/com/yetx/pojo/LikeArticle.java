@@ -5,16 +5,19 @@ import java.util.Date;
 public class LikeArticle {
     private String id;
 
-    private String articleId;
+    private String likeTypeId;
 
     private String userId;
 
+    private Integer type;
+
     private Date createTime;
 
-    public LikeArticle(String id, String articleId, String userId, Date createTime) {
+    public LikeArticle(String id, String likeTypeId, String userId, Integer type, Date createTime) {
         this.id = id;
-        this.articleId = articleId;
+        this.likeTypeId = likeTypeId;
         this.userId = userId;
+        this.type = type;
         this.createTime = createTime;
     }
 
@@ -30,12 +33,12 @@ public class LikeArticle {
         this.id = id == null ? null : id.trim();
     }
 
-    public String getArticleId() {
-        return articleId;
+    public String getLikeTypeId() {
+        return likeTypeId;
     }
 
-    public void setArticleId(String articleId) {
-        this.articleId = articleId == null ? null : articleId.trim();
+    public void setLikeTypeId(String likeTypeId) {
+        this.likeTypeId = likeTypeId == null ? null : likeTypeId.trim();
     }
 
     public String getUserId() {
@@ -44,6 +47,14 @@ public class LikeArticle {
 
     public void setUserId(String userId) {
         this.userId = userId == null ? null : userId.trim();
+    }
+
+    public Integer getType() {
+        return type;
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
     }
 
     public Date getCreateTime() {

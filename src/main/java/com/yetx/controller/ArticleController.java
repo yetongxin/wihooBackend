@@ -104,4 +104,13 @@ public class ArticleController {
         int c = a/b;
         return ResultVOUtils.success("ok");
     }
+    @PostMapping("/comment/zan")
+    public ResultVO zanArticleComment(@RequestHeader("token")String token,@RequestParam("commentId")String commentId){
+        return ResultVOUtils.success(articleService.zanArticleComment(token,commentId));
+    }
+    @DeleteMapping("/comment/zan")
+    public ResultVO disZanArticleComment(@RequestHeader("token")String token,@RequestParam("commentId")String commentId){
+        return ResultVOUtils.success(articleService.disZanArticleComment(token,commentId));
+    }
+
 }

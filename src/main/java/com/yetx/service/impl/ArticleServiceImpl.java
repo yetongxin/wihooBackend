@@ -70,7 +70,7 @@ public class ArticleServiceImpl implements ArticleService {
             if(StringUtils.isEmpty(openid))
                 throw new MyException(AuthErrorEnum.TOKEN_NOT_FIND);
             String userId = userMapper.selectUserIdByOpenId(openid);
-            hasZan = likeArticleMapper.countAnswerZan(userId, articleId) != 0;
+            hasZan = likeArticleMapper.countArticleZan(userId, articleId) != 0;
             //TODO 未来可以加入hasCollect
             //hasCollect = collectArticleMapper.countArticleCollect(userId,articleId)!=0;
             hasCollect = false;
@@ -366,18 +366,19 @@ public class ArticleServiceImpl implements ArticleService {
         Article article = articleMapper.selectByPrimaryKey(articleId);
         if(article==null)
             throw new MyException(ArticleErrorEnum.ARTICLEID_NOT_FIND);
-        User user = userMapper.selectByOpenid(openid);
+        String userId = userMapper.selectUserIdByOpenId(openid);
         //先查询点赞表
-        LikeArticle likeArticle = likeArticleMapper.selectByUserIdAndArticleId(user.getId(),articleId);
+        LikeArticle likeArticle = likeArticleMapper.selectByUserIdAndArticleId(userId,articleId);
         if(likeArticle!=null)
             return article.getLikeCounts();
-        article.setLikeCounts(article.getLikeCounts()+1);
+        article.setLikeCounts(article.getLikeCounts()+1);//给article表中的likeCounts字段累加1
         //更新article和点赞表
         articleMapper.updateByPrimaryKey(article);
         LikeArticle likeArticleDB = new LikeArticle();
         likeArticleDB.setId(UUID.randomUUID().toString().replace("-",""));
-        likeArticleDB.setArticleId(articleId);
-        likeArticleDB.setUserId(user.getId());
+        likeArticleDB.setLikeTypeId(articleId);
+        likeArticleDB.setType(1);//设置为1
+        likeArticleDB.setUserId(userId);
         likeArticleMapper.insert(likeArticleDB);
         return article.getLikeCounts();
     }
@@ -389,7 +390,27 @@ public class ArticleServiceImpl implements ArticleService {
         if(StringUtils.isEmpty(openid))
             throw new MyException(AuthErrorEnum.TOKEN_NOT_FIND);
         String userId = userMapper.selectUserIdByOpenId(openid);
-        return 0;
+        //先查出对应的评论存不存在
+        if(StringUtils.isEmpty(commentId))
+            throw new MyException(CommentErrorEnum.COMMENT_ID_NULL);
+        Comment comment = commentMapper.selectByPrimaryKey(commentId);
+        if(comment==null)
+            throw new MyException(CommentErrorEnum.COMMENT_NULL);
+        boolean hasZan = likeArticleMapper.countCommentZan(userId, commentId) != 0;
+
+        if(hasZan)
+            return comment.getLikeCounts();
+        else{
+            LikeArticle likeArticle = new LikeArticle();
+            likeArticle.setId(IdUtils.getNewId());
+            likeArticle.setLikeTypeId(commentId);
+            likeArticle.setUserId(userId);
+            likeArticle.setType(2);//设置为2
+            likeArticleMapper.insert(likeArticle);
+            comment.setLikeCounts(comment.getLikeCounts()+1);
+            commentMapper.updateByPrimaryKey(comment);
+            return comment.getLikeCounts();
+        }
     }
     @Transactional
     @Override
@@ -400,14 +421,40 @@ public class ArticleServiceImpl implements ArticleService {
         Article article = articleMapper.selectByPrimaryKey(articleId);
         if(article==null)
             throw new MyException(ArticleErrorEnum.ARTICLEID_NOT_FIND);
-        User user = userMapper.selectByOpenid(openid);
-        LikeArticle likeArticle = likeArticleMapper.selectByUserIdAndArticleId(user.getId(),articleId);
+        String userId = userMapper.selectUserIdByOpenId(openid);
+        LikeArticle likeArticle = likeArticleMapper.selectByUserIdAndArticleId(userId,articleId);
         if(likeArticle==null)
             return article.getLikeCounts();
         article.setLikeCounts(article.getLikeCounts()-1);
         //更新article和点赞表
         articleMapper.updateByPrimaryKey(article);
+//        likeArticleMapper.deleteArticleZan(userId,articleId);
         likeArticleMapper.deleteByPrimaryKey(likeArticle.getId());
         return article.getLikeCounts();
+    }
+
+    @Override
+    @Transactional
+    public Integer disZanArticleComment(String token, String commentId){
+        String openid = redisService.findOpenidByToken(token);
+        if(StringUtils.isEmpty(openid))
+            throw new MyException(UserErrorEnum.TOKEN_NOT_FIND);
+        if(StringUtils.isEmpty(commentId))
+            throw new MyException(CommentErrorEnum.COMMENT_ID_NULL);
+        Comment comment= commentMapper.selectByPrimaryKey(commentId);
+        if(comment==null)
+            throw new MyException(CommentErrorEnum.COMMENT_NULL);
+        String userId = userMapper.selectUserIdByOpenId(openid);
+
+        boolean hasZan = likeArticleMapper.countCommentZan(userId, commentId) != 0;
+        if(hasZan){
+            likeArticleMapper.deleteCommentZan(userId,commentId);
+            comment.setLikeCounts(comment.getLikeCounts()-1);
+            commentMapper.updateByPrimaryKey(comment);
+            return comment.getLikeCounts();
+        }
+        else{//没点过赞
+            return comment.getLikeCounts();
+        }
     }
 }

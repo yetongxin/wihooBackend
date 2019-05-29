@@ -79,6 +79,8 @@ public interface ArticleService {
      */
     Integer disZanArticle(String token, String articleId);
 
+    Integer disZanArticleComment(String token, String commentId);
+
     /**
      * 用户按下鼠标后
      *
