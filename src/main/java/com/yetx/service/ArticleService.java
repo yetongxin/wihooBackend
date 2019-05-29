@@ -5,10 +5,7 @@ import com.yetx.dto.CommentDTO;
 import com.yetx.pojo.Article;
 import com.yetx.pojo.ArticleComment;
 import com.yetx.pojo.Comment;
-import com.yetx.vo.ArticleVO;
-import com.yetx.vo.CommentVO;
-import com.yetx.vo.DraftVO;
-import com.yetx.vo.PageVO;
+import com.yetx.vo.*;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -38,6 +35,7 @@ public interface ArticleService {
 
     String uploadArticle(String token, ArticleDTO article);
 
+    public ArticleDetailVO findArticleDetailByAId(String token,String articleId);
     //TODO: 修改article表中的openid字段为userId
     String updateArticle(String token, ArticleDTO articleDTO);
 

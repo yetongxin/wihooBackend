@@ -28,6 +28,7 @@
   </resultMap>
   <resultMap id="ArticleVOMap" type="com.yetx.vo.ArticleVO">
     <id column="id" property="id" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    <result column="user_id" property="userId" jdbcType="VARCHAR" javaType="java.lang.String" />
     <result column="title" property="title" jdbcType="VARCHAR" javaType="java.lang.String"/>
     <result column="cover" property="cover" jdbcType="VARCHAR" javaType="java.lang.String"/>
     <result column="content" property="content" jdbcType="LONGVARCHAR" javaType="java.lang.String" />
@@ -38,12 +39,13 @@
 
     <result column="nickname" property="nickname" jdbcType="VARCHAR" javaType="java.lang.String"/>
     <result column="avatar" property="avatar" jdbcType="VARCHAR" javaType="java.lang.String"/>
-    <collection property="tags" ofType="java.lang.String" >
-      <result column="tagcontent" jdbcType="VARCHAR"/>
-    </collection>
+    <!--<collection property="tags" ofType="java.lang.String" >-->
+      <!--<result column="tagcontent" jdbcType="VARCHAR"/>-->
+    <!--</collection>-->
   </resultMap>
   <resultMap id="ArticleVOMap2" type="com.yetx.vo.ArticleVO">
     <id column="id" property="id" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    <result column="user_id" property="userId" jdbcType="VARCHAR" javaType="java.lang.String" />
     <result column="title" property="title" jdbcType="VARCHAR" javaType="java.lang.String"/>
     <result column="cover" property="cover" jdbcType="VARCHAR" javaType="java.lang.String"/>
     <result column="content" property="content" jdbcType="LONGVARCHAR" javaType="java.lang.String" />
@@ -54,9 +56,9 @@
 
     <result column="nickname" property="nickname" jdbcType="VARCHAR" javaType="java.lang.String"/>
     <result column="avatar" property="avatar" jdbcType="VARCHAR" javaType="java.lang.String"/>
-    <collection property="tags" column="id" ofType="java.lang.String" javaType="java.util.List" select="selectTagByAid">
-      <result column="tagcontent" jdbcType="VARCHAR"/>
-    </collection>
+    <!--<collection property="tags" column="id" ofType="java.lang.String" javaType="java.util.List" select="selectTagByAid">-->
+      <!--<result column="tagcontent" jdbcType="VARCHAR"/>-->
+    <!--</collection>-->
   </resultMap>
 
   <resultMap id="DraftMap" type="com.yetx.vo.DraftVO">
@@ -77,11 +79,11 @@
     select tag.content as tagcontent from tag as tag where tag.article_id=#{id}
   </select>
   <select id="selectAllByUserIdPaged" resultMap="ArticleVOMap2">
-    select a.id,a.title,a.cover,a.status,a.like_counts,a.collect_counts,a.content,a.create_time,u.nickname,u.avatar
+    select a.id,a.user_id,a.title,a.cover,a.status,a.like_counts,a.collect_counts,a.content,a.create_time,u.nickname,u.avatar
     from article a left join user u on a.user_id=u.id
     where user_id=#{userId}
   </select>
-  <!-- 这里支持草稿的分页，可以在service加 -->
+  <!-- 草稿只有一个 -->
   <select id="selectDraftByUserId" resultMap="DraftMap" parameterType="java.lang.String">
   select a.id,a.title,a.cover,a.content from article a
   where user_id=#{userId} and status=0
@@ -93,21 +95,21 @@
       <!--where user_id=#{userId} and status=0-->
   <!--</select>-->
 
-  <!--  有点问题的分页      -->
+  <!--  有点问题的分页     left join tag t on a.id=t.article_id  -->
   <select id="selectAllByUserId" resultMap="ArticleVOMap" parameterType="java.lang.String">
-      select a.id,a.title,a.cover,a.status,a.like_counts,a.collect_counts,a.content,a.create_time,u.nickname,u.avatar,t.content tagcontent
-      from article a left join user u on a.user_id=u.id left join tag t on a.id=t.article_id
+      select a.id,a.user_id,a.title,a.cover,a.status,a.like_counts,a.collect_counts,a.content,a.create_time,u.nickname,u.avatar
+      from article a left join user u on a.user_id=u.id
       where user_id=#{userId}
   </select>
 
 
   <select id="selectByPopularity" resultMap="ArticleVOMap2" parameterType="java.lang.String" >
-  select a.id,a.title,a.cover,a.status,a.like_counts,a.collect_counts,a.content,a.create_time,u.nickname,u.avatar
+  select a.id,a.user_id,a.title,a.cover,a.status,a.like_counts,a.collect_counts,a.content,a.create_time,u.nickname,u.avatar
   from article a left join user u on a.user_id=u.id
   where a.status=1 order by like_counts desc
   </select>
   <select id="selectByTime" resultMap="ArticleVOMap2" parameterType="java.lang.String" >
-  select a.id,a.title,a.cover,a.status,a.like_counts,a.collect_counts,a.content,a.create_time,u.nickname,u.avatar
+  select a.id,a.user_id,a.title,a.cover,a.status,a.like_counts,a.collect_counts,a.content,a.create_time,u.nickname,u.avatar
   from article a left join user u on a.user_id=u.id
   where a.status=1 order by a.create_time desc
   </select>
@@ -119,8 +121,8 @@
     <!--where status=1 order by like_counts,collect_counts desc-->
   <!--</select>-->
   <select id="selectVOByArticleId" resultMap="ArticleVOMap" parameterType="java.lang.String" >
-    select a.id,a.title,a.cover,a.status,a.like_counts,a.collect_counts,a.content,a.create_time,u.nickname,u.avatar,t.content tagcontent
-    from article a left join user u on a.user_id=u.id left join tag t on a.id=t.article_id
+    select a.id,a.user_id,a.title,a.cover,a.status,a.like_counts,a.collect_counts,a.content,a.create_time,u.nickname,u.avatar
+    from article a left join user u on a.user_id=u.id
     where a.id=#{articleId}
   </select>
   <select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs" parameterType="java.lang.String" >

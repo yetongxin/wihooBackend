@@ -34,7 +34,10 @@ public class ArticleController {
         PageVO pageVO = articleService.findAllArticleByTime(staPage,pageSize);
         return ResultVOUtils.success(pageVO);
     }
-
+    @GetMapping("/detail")
+    public ResultVO getArticleVOByAId(@RequestHeader(value = "token",required = false,defaultValue = "noToken")String token,@RequestParam("articleId")String articleId){
+        return ResultVOUtils.success(articleService.findArticleDetailByAId(token,articleId));
+    }
     @GetMapping("/comments")
     public ResultVO getAllComment(@RequestParam String articleId){
         List<CommentVO> articleComments = articleService.findAllCommentByArticleId(articleId);
@@ -82,7 +85,6 @@ public class ArticleController {
         Integer res = articleService.disZanArticle(token,articleId);
         return ResultVOUtils.success(res);
     }
-
     @PostMapping("/comment")
     public ResultVO commentArticle(@RequestHeader("token")String token,@RequestBody CommentDTO commentDTO){
         String commentId = articleService.commentArticle(token,commentDTO);

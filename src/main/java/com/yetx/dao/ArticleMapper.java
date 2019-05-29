@@ -27,11 +27,14 @@ public interface ArticleMapper {
 
     int updateByPrimaryKey(Article record);
 
+    @Select("select * from article where user_Id=#{userId}")
+    List<Article> selectOtherUserArticle(@Param("userId")String userId);
 
     List<ArticleVO> selectAllByUserIdPaged(@Param("userId") String userId);
 
     List<ArticleVO> selectAllByUserId(@Param("userId") String userId);
 
+    //查看用户的草稿
     DraftVO selectDraftByUserId(@Param("userId") String userId);
 
     List<ArticleVO> selectByPopularity();

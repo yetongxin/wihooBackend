@@ -1,6 +1,7 @@
 package com.yetx.dao;
 
 import com.yetx.pojo.Question;
+import com.yetx.vo.QuestionVO;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,7 +25,7 @@ public class QuestionMapperTest {
         List<String> keywords = new ArrayList<>();
         keywords.add("好吃");
         keywords.add("哪里");
-        List<Question> questions = questionMapper.selectByKeyWords(keywords);
+        List<QuestionVO> questions = questionMapper.selectByKeyWords(keywords);
         logger.info(String.valueOf(questions));
         Assert.assertEquals(5,questions.size());
     }

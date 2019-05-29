@@ -24,6 +24,18 @@
             <arg column="content" jdbcType="LONGVARCHAR" javaType="java.lang.String" />
         </constructor>
     </resultMap>
+    <resultMap id="QuestionVO" type="com.yetx.vo.QuestionVO" >
+            <id column="id" property="id" jdbcType="VARCHAR" javaType="java.lang.String" />
+            <result column="user_id" property="userId" jdbcType="VARCHAR" javaType="java.lang.String" />
+            <result column="nickname" property="nickname" jdbcType="VARCHAR" javaType="java.lang.String" />
+            <result column="avatar" property="avatar" jdbcType="VARCHAR" javaType="java.lang.String" />
+            <result column="title" property="title" jdbcType="VARCHAR" javaType="java.lang.String" />
+            <result column="focus_counts" property="focusCounts" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <result column="ans_counts" property="ansCounts" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <result column="status" property="status" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <result column="create_time" property="createTime" jdbcType="TIMESTAMP" javaType="java.util.Date" />
+            <result column="content" property="content" jdbcType="LONGVARCHAR" javaType="java.lang.String" />
+    </resultMap>
     <sql id="Base_Column_List" >
     id, user_id, title, focus_counts, ans_counts, status, create_time
   </sql>
@@ -37,11 +49,12 @@
         #{qId}
         </foreach>
     </select>
-    <select id="selectByKeyWords" resultMap="ResultMapWithBLOBs">
-        SELECT * FROM  question WHERE 1>2 OR
+    <select id="selectByKeyWords" resultMap="QuestionVO">
+        SELECT q.*,u.nickname,u.avatar FROM  question q left join user u on u.id = q.user_id WHERE 1>2 OR
         <foreach collection="keywords" item="item" index="index"  separator="OR">
             `title` LIKE CONCAT('%',#{item},'%')
         </foreach>
+
     </select>
     <select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs" parameterType="java.lang.String" >
         select

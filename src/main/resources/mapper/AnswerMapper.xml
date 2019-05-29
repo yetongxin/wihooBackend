@@ -24,12 +24,47 @@
       <arg column="content" jdbcType="LONGVARCHAR" javaType="java.lang.String" />
     </constructor>
   </resultMap>
+  <resultMap id="AnswerVOMap" type="com.yetx.vo.AnswerVO" >
+      <id column="id" property="id"  jdbcType="VARCHAR" javaType="java.lang.String" />
+      <result column="question_id" property="questionId" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <result column="nickname" property="nickname" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <result column="avatar" property="avatar" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <result column="user_id" property="userId" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <result column="like_counts" property="likeCounts" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <result column="comment_counts" property="commentCounts" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <result column="status" property="status" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <result column="create_time" property="createTime" jdbcType="TIMESTAMP" javaType="java.util.Date" />
+      <result column="content" property="content" jdbcType="LONGVARCHAR" javaType="java.lang.String" />
+  </resultMap>
+
+  <resultMap id="AnswerDraftVOMap" type="com.yetx.vo.AnswerDraftVO" >
+    <id column="id" property="id"  jdbcType="VARCHAR" javaType="java.lang.String" />
+    <result column="content" property="content" jdbcType="LONGVARCHAR" javaType="java.lang.String" />
+  </resultMap>
   <sql id="Base_Column_List" >
     id, question_id, user_id, like_counts, comment_counts, status, create_time
   </sql>
   <sql id="Blob_Column_List" >
     content
   </sql>
+  <select id="selectByQuestionIdOrderByTime" resultMap="AnswerVOMap">
+    select a.*,u.nickname as nickname ,u.avatar as avatar from answer a left join user u on u.id = a.user_id
+    where question_id = #{questionId} and status=1 order by create_time desc
+  </select>
+
+  <select id="selectByQuestionIdOrderByZan" resultMap="AnswerVOMap">
+    select a.*,u.nickname,u.avatar from answer a left join user u on u.id = a.user_id
+    where question_id = #{questionId} and status=1 order by like_counts desc
+  </select>
+
+  <select id="selectCollectAnswer" resultMap="AnswerVOMap">
+    select a.*,u.nickname,u.avatar from answer a INNER JOIN collect_answer c on c.answer_id=a.id left join user u on u.id = a.user_id
+    WHERE c.user_id=#{userId}
+  </select>
+  <select id="selectByUserId" resultMap="AnswerVOMap">
+   select a.*,u.nickname,u.avatar from answer a left join user u on u.id = a.user_id
+   where user_id = #{userId}
+  </select>
   <select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs" parameterType="java.lang.String" >
     select 
     <include refid="Base_Column_List" />

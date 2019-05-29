@@ -28,17 +28,26 @@ public class RedisOperator {
 
 
     //ZSet基本操作
+    public boolean queryIfExist(String key,String value){
+        if(redisTemplate.opsForZSet().reverseRank(key,value)!=null)
+            return true;
+        return false;
+    }
+    //设置score
     public Boolean zAdd(String key, String value, double score){
         //timeRedisTemplate.opsForValue().getAndSet("qTime:"+key,System.currentTimeMillis());
         return redisTemplate.opsForZSet().add(key,value,score);
     }
+    //增加score
     public Double zIncrement(String key, String value, double addNum){
         //timeRedisTemplate.opsForValue().getAndSet("qTime:"+key,System.currentTimeMillis());
         return redisTemplate.opsForZSet().incrementScore(key,value,addNum);
     }
+    //topn
     public Set<String> zGetTopN(String key, int sta, int end){
         return redisTemplate.opsForZSet().reverseRange(key,sta,end);
     }
+    //移除value
     public Long zRemove(String key, String value){
         //timeRedisTemplate.delete("qTime:"+key);
         return redisTemplate.opsForZSet().remove(key,value);
@@ -49,6 +58,7 @@ public class RedisOperator {
     public Set<String> zGetAll(String key){
         return redisTemplate.opsForZSet().reverseRangeByScore(key, 0, Double.MAX_VALUE);
     }
+
 
     public Long getTime(String key){
         return timeRedisTemplate.opsForValue().get(key);

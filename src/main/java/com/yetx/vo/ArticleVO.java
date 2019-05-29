@@ -22,13 +22,22 @@ public class ArticleVO {
 
     private Date createTime;
 
-    private List<String> tags;
+    //private List<String> tags;
+    private String userId;
 
     private String nickname;
 
     private String avatar;
 
     public ArticleVO() {
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getNickname() {
@@ -95,13 +104,7 @@ public class ArticleVO {
         this.collectCounts = collectCounts;
     }
 
-    public List<String> getTags() {
-        return tags;
-    }
 
-    public void setTags(List<String> tags) {
-        this.tags = tags;
-    }
 
     public Date getCreateTime() {
         return createTime;
@@ -130,7 +133,7 @@ public class ArticleVO {
                 ", collectCounts=" + collectCounts +
                 ", content='" + content + '\'' +
                 ", createTime=" + createTime +
-                ", tags=" + tags +
+                ", userId='" + userId + '\'' +
                 ", nickname='" + nickname + '\'' +
                 ", avatar='" + avatar + '\'' +
                 '}';

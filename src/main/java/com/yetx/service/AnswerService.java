@@ -3,6 +3,8 @@ package com.yetx.service;
 import com.yetx.dto.AnswerDTO;
 import com.yetx.dto.CommentDTO;
 import com.yetx.pojo.Answer;
+import com.yetx.vo.AnswerDetailVO;
+import com.yetx.vo.AnswerDraftVO;
 import com.yetx.vo.CommentVO;
 import com.yetx.vo.PageVO;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,4 +87,8 @@ public interface AnswerService {
     Boolean collectAnswer(String token, String answerId);
 
     Boolean disCollectAnswer(String token, String answerId);
+
+    AnswerDetailVO findAnswerDetailVO(String token,String answerId);
+
+    AnswerDraftVO getAnswerDraftByTokenQid(String token,String questionId);
 }

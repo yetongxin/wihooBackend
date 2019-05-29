@@ -50,7 +50,7 @@ public class UserController {
             return ResultVOUtils.success(updateres);
         return ResultVOUtils.fail();
     }
-    @RequestMapping(value = "/avatar",method = RequestMethod.PUT)
+    @RequestMapping(value = "/avatar",method = RequestMethod.POST)
     public ResultVO changeAvatar(@RequestHeader("token") String token, @RequestParam("file") MultipartFile[] files){
 
         String updateres = userService.updateAvatar(token,files);
@@ -62,7 +62,7 @@ public class UserController {
     public ResultVO changeBgImg(@RequestHeader("token") String token, @RequestParam("file") MultipartFile[] files){
         return ResultVOUtils.success(userService.updateBgimg(token,files));
     }
-    @GetMapping("/other")
+    @GetMapping("/otherInfo")
     public ResultVO findOtherUser(@RequestParam("userId")String userId){
         return ResultVOUtils.success(userService.findOtherUsrByUserId(userId));
     }
@@ -73,8 +73,7 @@ public class UserController {
      */
     @RequestMapping(value = "/follows",method = RequestMethod.GET)
     public ResultVO getAllFollow(@RequestHeader("token") String token){
-        UserDTO userDTO = userService.findAllFollow(token);
-        return ResultVOUtils.success(userDTO.getFollowUsers());
+        return ResultVOUtils.success(userService.findAllFollow(token));
     }
 
 
@@ -107,4 +106,5 @@ public class UserController {
     public ResultVO queryFocusQuestion(@RequestHeader("token") String token){
         return ResultVOUtils.success(userService.findAllFocusQuestion(token));
     }
+    //TODO : 关注别人
 }

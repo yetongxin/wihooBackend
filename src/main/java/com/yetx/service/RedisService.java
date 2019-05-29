@@ -11,12 +11,16 @@ public interface RedisService {
 
     void initQuestionPopuStart();
 
-
+    /**
+     **新增questionpopu id:1
+     */
     void zaddQuestionId(String id);
 
     void zdeleteQId(String id);
 
     Double addQuestionPopu(String id);
+
+    boolean queryIfExist(String id);
 
     Double subQuestionPopu(String id);
 

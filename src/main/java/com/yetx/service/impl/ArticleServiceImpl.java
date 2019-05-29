@@ -14,10 +14,7 @@ import com.yetx.pojo.*;
 import com.yetx.service.ArticleService;
 import com.yetx.service.RedisService;
 import com.yetx.utils.IdUtils;
-import com.yetx.vo.ArticleVO;
-import com.yetx.vo.CommentVO;
-import com.yetx.vo.DraftVO;
-import com.yetx.vo.PageVO;
+import com.yetx.vo.*;
 import io.netty.util.internal.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +45,8 @@ public class ArticleServiceImpl implements ArticleService {
     private CommentMapper commentMapper;
     @Autowired
     private TagMapper tagMapper;
-
+    @Autowired
+    private UserFanMapper userFanMapper;
     @Override
     public DraftVO findUserDraft(String token) {
         String openid = redisService.findOpenidByToken(token);
@@ -57,6 +55,35 @@ public class ArticleServiceImpl implements ArticleService {
         String userId = userMapper.selectUserIdByOpenId(openid);
         return articleMapper.selectDraftByUserId(userId);
 
+    }
+
+    @Override
+    public ArticleDetailVO findArticleDetailByAId(String token,String articleId) {
+        Boolean hasZan = false,hasCollect = false,hasFollow = false;
+        System.out.println("token:"+token);
+        if(StringUtils.isEmpty(articleId))
+            throw new MyException(ArticleErrorEnum.ARTICLEID_NULL);
+        ArticleVO articleVO = articleMapper.selectVOByArticleId(articleId);
+
+        if(!token.equals("noToken")){
+            String openid = redisService.findOpenidByToken(token);
+            if(StringUtils.isEmpty(openid))
+                throw new MyException(AuthErrorEnum.TOKEN_NOT_FIND);
+            String userId = userMapper.selectUserIdByOpenId(openid);
+            hasZan = likeArticleMapper.countAnswerZan(userId, articleId) != 0;
+            //TODO 未来可以加入hasCollect
+            //hasCollect = collectArticleMapper.countArticleCollect(userId,articleId)!=0;
+            hasCollect = false;
+            hasFollow = userFanMapper.countIfFollow(userId,articleVO.getUserId())!=0;
+        }
+
+        ArticleDetailVO articleDetailVO = new ArticleDetailVO(articleVO);
+        List<CommentVO> commentVO = commentMapper.selectCommentsvoByArticleId(articleId);
+        articleDetailVO.setComments(commentVO);
+        articleDetailVO.setHasCollect(hasCollect);
+        articleDetailVO.setHasZan(hasZan);
+        articleDetailVO.setHasFollow(hasFollow);
+        return articleDetailVO;
     }
 
     @Override
@@ -77,7 +104,7 @@ public class ArticleServiceImpl implements ArticleService {
 
     }
     @Override
-    public PageVO findAllArticleByTime(int staPage,int pageSize) {
+    public PageVO findAllArticleByTime(int staPage, int pageSize) {
 
         PageHelper.startPage(staPage,pageSize);
         List<ArticleVO> list = articleMapper.selectByTime();
@@ -165,7 +192,7 @@ public class ArticleServiceImpl implements ArticleService {
         articleMapper.insert(article);
         Article articleRes = articleMapper.selectByPrimaryKey(articleId);
 
-        //TODO 这里改成true false OK了
+        //TODO 1.这里改成true false OK了 2.这里改成返回Id
         if(articleRes!=null)    return articleRes.getId();
         else return "";
 

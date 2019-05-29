@@ -63,4 +63,8 @@ public class QuestionController {
     public ResultVO disFocusQuestion(@RequestHeader("token")String token,@RequestParam String questionId){
         return ResultVOUtils.success(questionService.disFocusQuestion(token,questionId));
     }
+    @GetMapping("/detail")
+    public ResultVO getQuestionDetail(@RequestParam("questionId")String questionId){
+        return ResultVOUtils.success(questionService.getQuestionDetail(questionId));
+    }
 }

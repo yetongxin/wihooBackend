@@ -2,9 +2,8 @@ package com.yetx.dao;
 
 import com.yetx.constant.QuestionStatus;
 import com.yetx.pojo.Question;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import com.yetx.vo.QuestionVO;
+import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -26,13 +25,25 @@ public interface QuestionMapper {
 
     int updateByPrimaryKey(Question record);
 
-    @Select("select * from question where status=1 order by create_time desc")
-    List<Question> selectOrderByTime();
 
-    @Select("select * from question where user_id=#{userId} and status="+ QuestionStatus.ONSHOW)
-    List<Question> selectByUserId(@Param("userId")String userId);
+    @Select("select q.*,u.nickname,u.avatar from question q left join user u on u.id=q.user_id where status=1 and q.id=#{id}")
+    @ResultMap("QuestionVO")
+    QuestionVO selectVOByPrimaryKey(@Param(("id")) String id);
 
-    List<Question> selectByKeyWords(@Param("keywords")List<String> keywords);
+    //    @Select("select * from question where status=1 order by create_time desc")
+    @Select("select q.*,u.nickname,u.avatar from question q left join user u on u.id=q.user_id where status=1 order by create_time desc")
+    @ResultMap("QuestionVO")
+    List<QuestionVO> selectOrderByTime();
+
+    @Select("select q.*,u.nickname,u.avatar from question q left join user u on u.id=q.user_id where status=1 order by ans_counts desc")
+    @ResultMap("QuestionVO")
+    List<QuestionVO> selctOrderByAnsCounts();
+
+    @Select("select q.*,u.nickname,u.avatar from question q left join user u on u.id=q.user_id where user_id=#{userId} and status="+ QuestionStatus.ONSHOW)
+    @ResultMap("QuestionVO")
+    List<QuestionVO> selectByUserId(@Param("userId")String userId);
+
+    List<QuestionVO> selectByKeyWords(@Param("keywords")List<String> keywords);
 
     @Update("update question set focus_counts=focus_counts+1 where id=#{questionId}")
     int addFocusCounts(@Param("questionId") String questionId);
@@ -40,9 +51,11 @@ public interface QuestionMapper {
     @Update("update question set focus_counts=if(focus_counts=0,0,focus_counts-1) where id=#{questionId}")
     int subFocusCounts(@Param("questionId") String questionId);
 
-    @Select("select q.* from question q inner join focus_question f on f.question_id=q.id where f.user_id=#{userId}")
-    List<Question> selectFocusQuestion(@Param("userId") String userId);
+    @Select("select q.* from question q inner join focus_question f on f.question_id=q.id left join user u on u.id=q.user_id where f.user_id=#{userId}")
+    @ResultMap("QuestionVO")
+    List<QuestionVO> selectFocusQuestion(@Param("userId") String userId);
 
+    //不用的
     List<Question> selectByIdSet(@Param("idSet") Set<String> idSet);
 
 }

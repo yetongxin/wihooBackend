@@ -11,13 +11,13 @@ import com.yetx.dto.CommentDTO;
 import com.yetx.enums.AuthErrorEnum;
 import com.yetx.enums.CommentErrorEnum;
 import com.yetx.enums.QuestionErrorEnum;
+import com.yetx.enums.UserErrorEnum;
 import com.yetx.exception.MyException;
 import com.yetx.pojo.*;
 import com.yetx.service.AnswerService;
 import com.yetx.service.RedisService;
 import com.yetx.utils.IdUtils;
-import com.yetx.vo.CommentVO;
-import com.yetx.vo.PageVO;
+import com.yetx.vo.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +44,12 @@ public class AnswerServiceImpl implements AnswerService {
     private LikeAnswerMapper likeAnswerMapper;
     @Autowired
     private CollectAnswerMapper collectAnswerMapper;
+    @Autowired
+    private UserFanMapper userFanMapper;
+
     private Logger logger = LoggerFactory.getLogger(AnswerServiceImpl.class);
+
+
     @Override
     public PageVO findAllAnswersOrderByZan(String questionId, Integer staPage, Integer pageSize) {
         if(staPage==null)   staPage = 1;
@@ -53,7 +58,7 @@ public class AnswerServiceImpl implements AnswerService {
             throw new MyException(QuestionErrorEnum.QUESTION_ID_NULL);
         }
         PageHelper.startPage(staPage,pageSize);
-        List<Answer> list = answerMapper.selectByQuestionIdOrderByZan(questionId);
+        List<AnswerVO> list = answerMapper.selectByQuestionIdOrderByZan(questionId);
         PageInfo pageInfo = new PageInfo(list);
 
         //返回前端需要的PageVO
@@ -74,7 +79,7 @@ public class AnswerServiceImpl implements AnswerService {
         }
         else {
             PageHelper.startPage(staPage,pageSize);
-            List<Answer> list = answerMapper.selectByQuestionIdOrderByTime(questionId);
+            List<AnswerVO> list = answerMapper.selectByQuestionIdOrderByTime(questionId);
             PageInfo pageInfo = new PageInfo(list);
 
             //返回前端需要的PageVO
@@ -395,5 +400,44 @@ public class AnswerServiceImpl implements AnswerService {
         }
         collectAnswerMapper.deleteAnswerCollect(userId,answerId);
         return true;
+    }
+
+    @Override
+    public AnswerDetailVO findAnswerDetailVO(String token,String answerId) {
+        Boolean hasZan = false,hasCollect = false,hasFollow = false;
+
+        if(StringUtils.isEmpty(answerId))
+            throw new MyException(QuestionErrorEnum.ANSWER_ID_NULL);
+        AnswerVO answerVO = answerMapper.selectAnswerVOById(answerId);
+
+
+        if(!token.equals("noToken")){
+            String openid = redisService.findOpenidByToken(token);
+            if(StringUtils.isEmpty(openid))
+                throw new MyException(AuthErrorEnum.TOKEN_NOT_FIND);
+            String userId = userMapper.selectUserIdByOpenId(openid);
+            hasZan = likeAnswerMapper.countAnswerZan(userId, answerId) != 0;
+            hasCollect = collectAnswerMapper.countAnswerCollect(userId,answerId)!=0;
+            hasFollow = userFanMapper.countIfFollow(userId,answerVO.getUserId())!=0;
+        }
+
+        List<CommentVO> commentVO = commentMapper.selectCommentsVOByAnswerId(answerId);
+        QuestionVO questionVO = questionMapper.selectVOByPrimaryKey(answerVO.getQuestionId());
+        redisService.addQuestionPopu(answerVO.getQuestionId());
+        return new AnswerDetailVO(questionVO,answerVO,commentVO,hasZan,hasCollect,hasFollow);
+
+    }
+
+    @Override
+    public AnswerDraftVO getAnswerDraftByTokenQid(String token, String questionId) {
+        String openid = redisService.findOpenidByToken(token);
+        if(StringUtils.isEmpty(openid))
+            throw new MyException(AuthErrorEnum.TOKEN_NOT_FIND);
+        String userId = userMapper.selectUserIdByOpenId(openid);
+        if(StringUtils.isEmpty(questionId))
+            throw new MyException(QuestionErrorEnum.QUESTION_ID_NULL);
+
+        return answerMapper.getAnswerDraft(userId,questionId);
+
     }
 }

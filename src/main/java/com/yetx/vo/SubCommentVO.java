@@ -10,6 +10,8 @@ public class SubCommentVO {
 
     private String fromNickname;
 
+    private String fromAvatar;
+
     private String toNickname;
 
     private String toUid;
@@ -85,5 +87,13 @@ public class SubCommentVO {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getFromAvatar() {
+        return fromAvatar;
+    }
+
+    public void setFromAvatar(String fromAvatar) {
+        this.fromAvatar = fromAvatar;
     }
 }

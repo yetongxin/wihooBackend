@@ -15,12 +15,13 @@ public class CommentVO {
 
     private String fromNickname;
 
+    private String fromAvatar;
 
     private Date createTime;
 
     private String content;
 
-    private List<Comment> subComments;
+    private List<SubCommentVO> subComments;
 
     public CommentVO() {
     }
@@ -89,11 +90,19 @@ public class CommentVO {
         this.content = content;
     }
 
-    public List<Comment> getSubComments() {
+    public List<SubCommentVO> getSubComments() {
         return subComments;
     }
 
-    public void setSubComments(List<Comment> subComments) {
+    public void setSubComments(List<SubCommentVO> subComments) {
         this.subComments = subComments;
+    }
+
+    public String getFromAvatar() {
+        return fromAvatar;
+    }
+
+    public void setFromAvatar(String fromAvatar) {
+        this.fromAvatar = fromAvatar;
     }
 }

@@ -1,6 +1,7 @@
 package com.yetx.dao;
 
 import com.yetx.pojo.UserFan;
+import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -16,4 +17,7 @@ public interface UserFanMapper {
     int updateByPrimaryKeySelective(UserFan record);
 
     int updateByPrimaryKey(UserFan record);
+
+    @Select("select COUNT(*) from user_fan where fan_id=#{followId} and user_id=#{beFollowedId}")
+    int countIfFollow(String followId,String beFollowedId);
 }

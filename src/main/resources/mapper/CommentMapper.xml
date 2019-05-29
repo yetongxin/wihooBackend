@@ -31,6 +31,7 @@
     <result column="from_uid" property="fromUid" jdbcType="VARCHAR" javaType="java.lang.String" />
     <!--<result column="to_uid" property="toUid" jdbcType="VARCHAR" javaType="java.lang.String"/>-->
     <result column="from_nickname1" property="fromNickname" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    <result column="from_avatar1" property="fromAvatar" jdbcType="VARCHAR" javaType="java.lang.String"/>
     <result column="content" property="content" jdbcType="LONGVARCHAR" javaType="java.lang.String" />
     <result column="like_counts" property="likeCounts" jdbcType="INTEGER" javaType="java.lang.Integer" />
     <result column="create_time" property="createTime" jdbcType="TIMESTAMP" javaType="java.util.Date"/>
@@ -43,6 +44,7 @@
       <result column="like_counts2" property="likeCounts" jdbcType="INTEGER" javaType="java.lang.Integer" />
       <result column="create_time2" property="createTime" jdbcType="TIMESTAMP" javaType="java.util.Date"/>
       <result column="from_nickname2" property="fromNickname" jdbcType="VARCHAR" javaType="java.lang.String"/>
+      <result column="from_avatar2" property="fromAvatar" jdbcType="VARCHAR" javaType="java.lang.String"/>
       <result column="to_nickname2" property="toNickname" jdbcType="VARCHAR" javaType="java.lang.String"/>
 
       <!--<result column="parent_type2" property="parentType" jdbcType="INTEGER" javaType="java.lang.Integer" />-->
@@ -59,9 +61,9 @@
 
   <select id="selectCommentsvoByArticleId" resultMap="CommentVOResultMap" parameterType="java.lang.String">
 
-    select c1.id,c1.from_uid,c1.content,c1.like_counts,c1.create_time,u1.nickname as from_nickname1,
+    select c1.id,c1.from_uid,c1.content,c1.like_counts,c1.create_time,u1.nickname as from_nickname1,u1.avatar as from_avatar1,
     c2.id as id2,c2.from_uid as from_uid2,c2.to_uid as to_uid2,c2.content as content2,c2.like_counts as like_counts2,c2.create_time as create_time2,
-    u2.nickname as from_nickname2,u3.nickname as to_nickname2
+    u2.nickname as from_nickname2,u2.avatar as from_avatar2,u3.nickname as to_nickname2
     from comment c1
     left join comment c2 on c2.parent_id=c1.id and c2.parent_type=1
     left join user u1 on u1.id=c1.from_uid
@@ -74,9 +76,9 @@
 
   <select id="selectCommentsVOByAnswerId" resultMap="CommentVOResultMap" parameterType="java.lang.String">
 
-    select c1.id,c1.from_uid,c1.content,c1.like_counts,c1.create_time,u1.nickname as from_nickname1,
+    select c1.id,c1.from_uid,c1.content,c1.like_counts,c1.create_time,u1.nickname as from_nickname1,u1.avatar as from_avatar1,
     c2.id as id2,c2.from_uid as from_uid2,c2.to_uid as to_uid2,c2.content as content2,c2.like_counts as like_counts2,c2.create_time as create_time2,
-    u2.nickname as from_nickname2,u3.nickname as to_nickname2
+    u2.nickname as from_nickname2,u2.avatar as from_avatar2,u3.nickname as to_nickname2
     from comment c1
     left join comment c2 on c2.parent_id=c1.id and c2.parent_type=3
     left join user u1 on u1.id=c1.from_uid

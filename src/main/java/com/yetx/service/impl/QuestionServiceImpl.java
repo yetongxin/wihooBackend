@@ -3,6 +3,7 @@ package com.yetx.service.impl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yetx.constant.QuestionStatus;
+import com.yetx.dao.AnswerMapper;
 import com.yetx.dao.FocusQuestionMapper;
 import com.yetx.dao.QuestionMapper;
 import com.yetx.dao.UserMapper;
@@ -15,7 +16,10 @@ import com.yetx.pojo.Question;
 import com.yetx.service.QuestionService;
 import com.yetx.service.RedisService;
 import com.yetx.utils.IdUtils;
+import com.yetx.vo.AnswerVO;
 import com.yetx.vo.PageVO;
+import com.yetx.vo.QuestionDetailVO;
+import com.yetx.vo.QuestionVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,8 +42,26 @@ public class QuestionServiceImpl implements QuestionService {
     private UserMapper userMapper;
     @Autowired
     private FocusQuestionMapper focusQuestionMapper;
+    @Autowired
+    private AnswerMapper answerMapper;
+
+    private final int PAGESIZE=5;
     private Logger logger = LoggerFactory.getLogger(QuestionServiceImpl.class);
 
+    @Override
+    public PageVO findAllQuestionsPopu(Integer staPage, Integer pageSize) {
+        PageHelper.startPage(staPage,pageSize);
+        List<QuestionVO> list = questionMapper.selctOrderByAnsCounts();
+        PageInfo pageInfo = new PageInfo(list);
+        //返回前端需要的PageVO
+        PageVO pageVO = new PageVO();
+        pageVO.setCurData(pageInfo.getList());
+        pageVO.setPageNum(pageInfo.getPages());
+        pageVO.setCurPage(staPage);
+        pageVO.setRecords(pageInfo.getTotal());
+
+        return pageVO;
+    }
 
     @Override
     public PageVO findAllQuestions(Integer staPage, Integer pageSize) {
@@ -47,7 +69,7 @@ public class QuestionServiceImpl implements QuestionService {
         if(staPage==null)   staPage = 1;
         if(pageSize==null)  pageSize = 5;
         PageHelper.startPage(staPage,pageSize);
-        List<Question> list = questionMapper.selectOrderByTime();
+        List<QuestionVO> list = questionMapper.selectOrderByTime();
         PageInfo pageInfo = new PageInfo(list);
 
         //返回前端需要的PageVO
@@ -152,7 +174,7 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public List<Question> findQuestionByUserId(String userId) {
+    public List<QuestionVO> findQuestionByUserId(String userId) {
         if(StringUtils.isEmpty(userId)){
             throw new MyException(QuestionErrorEnum.QUESTION_UID_NULL);
         }
@@ -160,13 +182,13 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public List<Question> searchQuestionByKeyWord(String keyword) {
+    public List<QuestionVO> searchQuestionByKeyWord(String keyword) {
         if(StringUtils.isEmpty(keyword)) {
             logger.error(QuestionErrorEnum.QUESTION_KEYWORDS_NULL.getMsg());
             throw new MyException(QuestionErrorEnum.QUESTION_KEYWORDS_NULL);
         }
         List<String> keywords = Arrays.asList(keyword.split("\\s+"));
-        List<Question> list = questionMapper.selectByKeyWords(keywords);
+        List<QuestionVO> list = questionMapper.selectByKeyWords(keywords);
         return list;
     }
 
@@ -207,7 +229,7 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public List<Question> findAllfocusQuestion(String token){
+    public List<QuestionVO> findAllfocusQuestion(String token){
         String openid = redisService.findOpenidByToken(token);
         if(StringUtils.isEmpty(openid)){
             throw new MyException(AuthErrorEnum.TOKEN_NOT_FIND);
@@ -217,18 +239,41 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public List<Question> findTopNQuestion() {
+    public List<QuestionVO> findTopNQuestion() {
         Set<String> set = redisService.getTopNQuestion();
         if(set==null){
-            return (List<Question>) findAllQuestions(1,20).getCurData();
+            return (List<QuestionVO>) findAllQuestions(1,20).getCurData();
         }
         else {
-            List<Question> questions = new ArrayList<>();
+            List<QuestionVO> questions = new ArrayList<>();
             for(String str:set){
-                questions.add(questionMapper.selectByPrimaryKey(str));
+                questions.add(questionMapper.selectVOByPrimaryKey(str));
             }
             return  questions;
         }
 
+    }
+
+    @Override
+    public QuestionDetailVO getQuestionDetail(String questionId) {
+        if(StringUtils.isEmpty(questionId))
+            throw new MyException(QuestionErrorEnum.QUESTION_ID_NULL);
+        QuestionDetailVO questiondetailVO = new QuestionDetailVO();
+        PageHelper.startPage(1,PAGESIZE);
+        List<AnswerVO> list = answerMapper.selectByQuestionIdOrderByZan(questionId);
+        PageInfo pageInfo = new PageInfo(list);
+        questiondetailVO.setAnswers(pageInfo.getList());
+        questiondetailVO.setQuestion(questionMapper.selectVOByPrimaryKey(questionId));
+
+        //TODO: 判断存不存在那个键值，存在就直接加，不存在zadd
+        if(redisService.queryIfExist(questionId)){
+            redisService.addQuestionPopu(questionId);
+        }
+        else{
+            redisService.zaddQuestionId(questionId);
+        }
+        //redisService.addQuestionPopu(questionId);
+        //redisService.zaddQuestionId(questionId);
+        return questiondetailVO;
     }
 }

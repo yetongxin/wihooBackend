@@ -8,20 +8,17 @@ import com.yetx.dao.AnswerMapper;
 import com.yetx.dao.ArticleMapper;
 import com.yetx.dao.QuestionMapper;
 import com.yetx.dao.UserMapper;
+import com.yetx.dto.OtherUserDTO;
 import com.yetx.dto.UserDTO;
 import com.yetx.enums.AuthErrorEnum;
 import com.yetx.enums.UserErrorEnum;
 import com.yetx.exception.MyException;
-import com.yetx.pojo.Answer;
-import com.yetx.pojo.Article;
 import com.yetx.pojo.Question;
 import com.yetx.pojo.User;
 import com.yetx.service.RedisService;
 import com.yetx.service.UserService;
 import com.yetx.utils.RedisOperator;
-import com.yetx.vo.ArticleVO;
-import com.yetx.vo.PageVO;
-import com.yetx.vo.UserLoginStatusVO;
+import com.yetx.vo.*;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
@@ -45,10 +42,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -191,12 +185,16 @@ public class UserServiceImpl implements UserService {
         JSONObject sessionObj = new JSONObject();
         sessionObj.put( "openid",openid );
         sessionObj.put( "sessionKey",session_key );
-        //设置为1天
-        redisOperator.set("TOKEN:"+skey,sessionObj.toJSONString(),60*60*24);
+        //设置为1小时
+        redisOperator.set("TOKEN:"+skey,sessionObj.toJSONString(),60*60);
         if(first)
             return new UserLoginStatusVO(skey,first,null);
-        else
-            return new UserLoginStatusVO(skey,first,user);
+        else{
+            if(user.getNickname().equals("null_name"))
+                return new UserLoginStatusVO(skey,true,null);
+            else
+                return new UserLoginStatusVO(skey,false,user);
+        }
 
     }
 //    @Override
@@ -378,20 +376,29 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findOtherUsrByUserId(String userId) {
+    public OtherUserVO findOtherUsrByUserId(String userId) {
         if(StringUtils.isEmpty(userId))
             throw new MyException(UserErrorEnum.USER_ID_NULL);
-        return userMapper.selectByPrimaryKey(userId);
+        User user = userMapper.selectByPrimaryKey(userId);
+        if(user==null)
+            throw new MyException(UserErrorEnum.USER_NOT_FOUND);
+
+        OtherUserVO otherUserVO = new OtherUserVO(user);
+        otherUserVO.setOfArticles(articleMapper.selectOtherUserArticle(userId));
+        otherUserVO.setOfAnswers(answerMapper.selectByUserId(userId));
+        return otherUserVO;
     }
 
     @Override
-    public UserDTO findAllFollow(String token) {
+    public List<OtherUserDTO> findAllFollow(String token) {
         String openid = redisService.findOpenidByToken(token);
         if(StringUtils.isEmpty(openid))
             throw new MyException(AuthErrorEnum.OPENID_NOT_FIND);
         UserDTO userDTO = userMapper.selectFollowsByOpenid(openid);
+        if(userDTO!=null)
+            return userDTO.getFollowUsers();
         //List<>
-        return userDTO;
+        return null;
     }
 
     @Override
@@ -424,7 +431,7 @@ public class UserServiceImpl implements UserService {
         String openid = redisService.findOpenidByToken(token);
         String userId = userMapper.selectUserIdByOpenId(openid);
         PageHelper.startPage(staPage,pageSize);
-        List<Question> list = questionMapper.selectByUserId(userId);
+        List<QuestionVO> list = questionMapper.selectByUserId(userId);
         PageInfo pageInfo = new PageInfo(list);
 
         //返回前端需要的PageVO
@@ -457,7 +464,7 @@ public class UserServiceImpl implements UserService {
         String openid = redisService.findOpenidByToken(token);
         String userId = userMapper.selectUserIdByOpenId(openid);
         PageHelper.startPage(staPage,pageSize);
-        List<Answer> list = answerMapper.selectByUserId(userId);
+        List<AnswerVO> list = answerMapper.selectByUserId(userId);
         PageInfo pageInfo = new PageInfo(list);
 
         //返回前端需要的PageVO
@@ -469,17 +476,23 @@ public class UserServiceImpl implements UserService {
         return pageVO;
     }
     @Override
-    public List<Answer> findAllCollectAnswer(String token){
+    public List<CollectAnswerVO> findAllCollectAnswer(String token){
         String openid = redisService.findOpenidByToken(token);
         if(StringUtils.isEmpty(openid))
             throw new MyException(AuthErrorEnum.TOKEN_NOT_FIND);
         String userId = userMapper.selectUserIdByOpenId(openid);
+        List<AnswerVO> answerVOList = answerMapper.selectCollectAnswer(userId);
+        List<CollectAnswerVO> collectAnswerVOs = new ArrayList<>();
+        for(AnswerVO answerVO :answerVOList){
+            Question question = questionMapper.selectByPrimaryKey(answerVO.getQuestionId());
 
-        return answerMapper.selectCollectAnswer(userId);
+            collectAnswerVOs.add(new CollectAnswerVO(question.getId(),question.getTitle(),answerVO));
+        }
+        return collectAnswerVOs;
     }
 
     @Override
-    public List<Question> findAllFocusQuestion(String token) {
+    public List<QuestionVO> findAllFocusQuestion(String token) {
         String openid = redisService.findOpenidByToken(token);
         if(StringUtils.isEmpty(openid))
             throw new MyException(AuthErrorEnum.TOKEN_NOT_FIND);

@@ -1,6 +1,7 @@
 package com.yetx.dao;
 
 import com.yetx.service.RedisService;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,5 +55,12 @@ public class RedisTest {
         redisService.zaddQuestionId("000000001234756");
         redisService.zaddQuestionId("00000000123459326");
         redisService.initQuestionPopuWeekJob();
+    }
+    @Test
+    public void testIfExist(){
+        boolean flag1 = redisService.queryIfExist("123456");
+        Assert.assertEquals(false,flag1);
+        boolean flag2 = redisService.queryIfExist("000015");
+        Assert.assertEquals(true,flag2);
     }
 }
