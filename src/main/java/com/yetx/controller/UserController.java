@@ -3,6 +3,7 @@ package com.yetx.controller;
 import com.yetx.dto.UserDTO;
 import com.yetx.enums.StatusEnum;
 import com.yetx.pojo.User;
+import com.yetx.service.AnswerService;
 import com.yetx.service.RedisService;
 import com.yetx.service.UserService;
 import com.yetx.utils.ResultVOUtils;
@@ -66,6 +67,7 @@ public class UserController {
     public ResultVO findOtherUser(@RequestParam("userId")String userId){
         return ResultVOUtils.success(userService.findOtherUsrByUserId(userId));
     }
+
     /**
      * 查看用户的所有关注的人
      * @param token
@@ -107,4 +109,28 @@ public class UserController {
         return ResultVOUtils.success(userService.findAllFocusQuestion(token));
     }
     //TODO : 关注别人
+    @PostMapping("/follow")
+    public ResultVO followOther(@RequestHeader("token")String token,
+                                @RequestParam("otherUserId")String otherUserId,
+                                @RequestParam("status")Integer status){
+        return ResultVOUtils.success(userService.handlefollowOther(token,otherUserId,status));
+    }
+    @GetMapping("/other/answers")
+    public ResultVO findOthersAnswers(@RequestParam("userId")String userId,Integer staPage,Integer pageSize){
+        return ResultVOUtils.success(userService.findOtherAnswer(userId,staPage,pageSize));
+    }
+    @GetMapping("/other/questions")
+    public ResultVO findOthersQuestions(@RequestParam("userId")String userId,Integer staPage,Integer pageSize){
+        return ResultVOUtils.success(userService.findAllQuestion(userId,staPage,pageSize));
+    }
+    @GetMapping("/other/articles")
+    public ResultVO findOthersArticles(@RequestParam("userId")String userId,Integer staPage,Integer pageSize){
+        return ResultVOUtils.success(userService.findOtherArticle(userId,staPage,pageSize));
+    }
+    @GetMapping("/other/collectAnswer")
+    public ResultVO findOthersCollectAnswer(@RequestParam("userId")String userId,Integer staPage,Integer pageSize){
+        return ResultVOUtils.success(userService.findOtherCollectAnswer(userId));
+    }
+
+
 }

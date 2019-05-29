@@ -131,6 +131,8 @@ public class AnswerServiceImpl implements AnswerService {
         answer.setContent(answerDTO.getContent());
         answer.setQuestionId(answerDTO.getQuestionId());
         answerMapper.insert(answer);
+        //question表回答数+1
+        questionMapper.addAnswerCounts(answerDTO.getQuestionId());
         //增加问题热度
         redisService.addQuestionPopu(answerDTO.getQuestionId());
         return answerMapper.selectByPrimaryKey(answerId);

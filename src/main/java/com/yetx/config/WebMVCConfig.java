@@ -52,7 +52,7 @@ public class WebMVCConfig extends WebMvcConfigurationSupport {
 
         registry.addInterceptor(tokenInterceptor())
                 .addPathPatterns(urlPatterns)
-                .excludePathPatterns("/user/login").excludePathPatterns("/user/otherInfo")
+                .excludePathPatterns("/user/login").excludePathPatterns("/user/otherInfo","/user/other/**")
                 .excludePathPatterns("/article/*")
                 .excludePathPatterns("/question/all/time","/question/all/popu","/question/user","/question/search","/question/detail");
 

@@ -4,10 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yetx.dao.AnswerMapper;
-import com.yetx.dao.ArticleMapper;
-import com.yetx.dao.QuestionMapper;
-import com.yetx.dao.UserMapper;
+import com.yetx.dao.*;
 import com.yetx.dto.OtherUserDTO;
 import com.yetx.dto.UserDTO;
 import com.yetx.enums.AuthErrorEnum;
@@ -15,8 +12,10 @@ import com.yetx.enums.UserErrorEnum;
 import com.yetx.exception.MyException;
 import com.yetx.pojo.Question;
 import com.yetx.pojo.User;
+import com.yetx.pojo.UserFan;
 import com.yetx.service.RedisService;
 import com.yetx.service.UserService;
+import com.yetx.utils.IdUtils;
 import com.yetx.utils.RedisOperator;
 import com.yetx.vo.*;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -60,6 +59,8 @@ public class UserServiceImpl implements UserService {
     private RedisOperator redisOperator;
     @Autowired
     private RedisService redisService;
+    @Autowired
+    private UserFanMapper userFanMapper;
 
     @Value("${wechat.appid}")
     private String appid;
@@ -384,8 +385,8 @@ public class UserServiceImpl implements UserService {
             throw new MyException(UserErrorEnum.USER_NOT_FOUND);
 
         OtherUserVO otherUserVO = new OtherUserVO(user);
-        otherUserVO.setOfArticles(articleMapper.selectOtherUserArticle(userId));
-        otherUserVO.setOfAnswers(answerMapper.selectByUserId(userId));
+        //otherUserVO.setOfArticles(articleMapper.selectOtherUserArticle(userId));
+        //otherUserVO.setOfAnswers(answerMapper.selectByUserId(userId));
         return otherUserVO;
     }
 
@@ -499,5 +500,100 @@ public class UserServiceImpl implements UserService {
         String userId = userMapper.selectUserIdByOpenId(openid);
 
         return questionMapper.selectFocusQuestion(userId);
+    }
+
+    @Override
+    public Boolean handlefollowOther(String token, String otherUserId, Integer status){
+        String openid = redisService.findOpenidByToken(token);
+        if(StringUtils.isEmpty(openid))
+            throw new MyException(AuthErrorEnum.TOKEN_NOT_FIND);
+
+        String userId = userMapper.selectUserIdByOpenId(openid);
+        boolean res = true;
+        boolean isFollowed = userFanMapper.countIfFollow(userId, otherUserId) != 0;
+        if(status==1){//想要关注
+            if(!isFollowed){
+                UserFan userFan = new UserFan(IdUtils.getNewId(),otherUserId,userId);
+                userFanMapper.insert(userFan);
+            }
+            else
+                res = false;
+            //else doNothing
+        }
+        else{//想要取消关注
+            if(isFollowed){
+                userFanMapper.deleteUserFan(userId,otherUserId);
+            }
+            else
+                res = false;
+            //else doNothing
+        }
+        return res;
+    }
+    // 以下四个是他人页面需要用到的service
+    @Override
+    public PageVO findOtherArticle(String userId, Integer staPage, Integer pageSize) {
+
+        if(StringUtils.isEmpty(userId))
+            throw new MyException(UserErrorEnum.USER_ID_NULL);
+        Page page = PageHelper.startPage(staPage,pageSize);
+        List<ArticleVO> list = articleMapper.selectAllByUserIdPaged(userId);
+        PageInfo pageInfo = new PageInfo(list);
+
+        //返回前端需要的PageVO
+        PageVO pageVO = new PageVO();
+        pageVO.setCurData(pageInfo.getList());
+        pageVO.setPageNum(pageInfo.getPages());
+        pageVO.setCurPage(staPage);
+        pageVO.setRecords(pageInfo.getTotal());
+
+        return pageVO;
+    }
+
+    @Override
+    public PageVO findOtherQuestion(String userId, Integer staPage, Integer pageSize) {
+        if(StringUtils.isEmpty(userId))
+            throw new MyException(UserErrorEnum.USER_ID_NULL);
+        PageHelper.startPage(staPage,pageSize);
+        List<QuestionVO> list = questionMapper.selectByUserId(userId);
+        PageInfo pageInfo = new PageInfo(list);
+
+        //返回前端需要的PageVO
+        PageVO pageVO = new PageVO();
+        pageVO.setCurData(pageInfo.getList());
+        pageVO.setPageNum(pageInfo.getPages());
+        pageVO.setCurPage(staPage);
+        pageVO.setRecords(pageInfo.getTotal());
+        return pageVO;
+    }
+
+    @Override
+    public PageVO findOtherAnswer(String userId, Integer staPage, Integer pageSize) {
+        if(StringUtils.isEmpty(userId))
+            throw new MyException(UserErrorEnum.USER_ID_NULL);
+        PageHelper.startPage(staPage,pageSize);
+        List<AnswerVO> list = answerMapper.selectByUserId(userId);
+        PageInfo pageInfo = new PageInfo(list);
+
+        //返回前端需要的PageVO
+        PageVO pageVO = new PageVO();
+        pageVO.setCurData(pageInfo.getList());
+        pageVO.setPageNum(pageInfo.getPages());
+        pageVO.setCurPage(staPage);
+        pageVO.setRecords(pageInfo.getTotal());
+        return pageVO;
+    }
+
+    @Override
+    public List<CollectAnswerVO> findOtherCollectAnswer(String userId) {
+        if(StringUtils.isEmpty(userId))
+            throw new MyException(UserErrorEnum.USER_ID_NULL);
+        List<AnswerVO> answerVOList = answerMapper.selectCollectAnswer(userId);
+        List<CollectAnswerVO> collectAnswerVOs = new ArrayList<>();
+        for(AnswerVO answerVO :answerVOList){
+            Question question = questionMapper.selectByPrimaryKey(answerVO.getQuestionId());
+            collectAnswerVOs.add(new CollectAnswerVO(question.getId(),question.getTitle(),answerVO));
+        }
+        return collectAnswerVOs;
     }
 }

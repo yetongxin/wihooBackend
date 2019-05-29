@@ -51,6 +51,13 @@ public interface QuestionMapper {
     @Update("update question set focus_counts=if(focus_counts=0,0,focus_counts-1) where id=#{questionId}")
     int subFocusCounts(@Param("questionId") String questionId);
 
+    @Update("update question set ans_counts=ans_counts+1 where id=#{questionId}")
+    int addAnswerCounts(@Param("questionId") String questionId);
+
+    @Update("update question set ans_counts=if(ans_counts=0,0,ans_counts-1) where id=#{questionId}")
+    int subAnswerCounts(@Param("questionId") String questionId);
+
+
     @Select("select q.* from question q inner join focus_question f on f.question_id=q.id left join user u on u.id=q.user_id where f.user_id=#{userId}")
     @ResultMap("QuestionVO")
     List<QuestionVO> selectFocusQuestion(@Param("userId") String userId);

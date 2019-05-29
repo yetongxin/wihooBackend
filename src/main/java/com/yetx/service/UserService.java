@@ -4,10 +4,7 @@ package com.yetx.service;
 import com.github.pagehelper.PageInfo;
 import com.yetx.dto.OtherUserDTO;
 import com.yetx.dto.UserDTO;
-import com.yetx.pojo.Answer;
-import com.yetx.pojo.Article;
-import com.yetx.pojo.Question;
-import com.yetx.pojo.User;
+import com.yetx.pojo.*;
 import com.yetx.vo.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -38,4 +35,12 @@ public interface UserService {
     List<QuestionVO> findAllFocusQuestion(String token);
 
     OtherUserVO findOtherUsrByUserId(String userId);
+
+    public PageVO findOtherArticle(String userId,Integer staPage,Integer pageSize);
+    public PageVO findOtherAnswer(String userId,Integer staPage,Integer pageSize);
+    public PageVO findOtherQuestion(String userId,Integer staPage,Integer pageSize);
+    public List<CollectAnswerVO> findOtherCollectAnswer(String userId);
+
+
+    Boolean handlefollowOther(String token, String otherUserId, Integer status);
 }
