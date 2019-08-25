@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.yetx</groupId>
-    <artifactId>wihooBackend</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>wihooBackend</name>
-    <description>Demo project for Spring Boot</description>
+    <artifactId>WritByU</artifactId>
+    <version>0.0.2-SNAPSHOT</version>
+    <name>WritByU</name>
+    <description>Demo project for MiniProgram WritByU</description>
 
     <properties>
         <java.version>1.8</java.version>

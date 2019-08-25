@@ -132,7 +132,8 @@ public class AnswerServiceImpl implements AnswerService {
         answer.setQuestionId(answerDTO.getQuestionId());
         answerMapper.insert(answer);
         //question表回答数+1
-        questionMapper.addAnswerCounts(answerDTO.getQuestionId());
+        if(answerDTO.getStatus()==1)
+            questionMapper.addAnswerCounts(answerDTO.getQuestionId());
         //增加问题热度
         redisService.addQuestionPopu(answerDTO.getQuestionId());
         return answerMapper.selectByPrimaryKey(answerId);
@@ -160,6 +161,9 @@ public class AnswerServiceImpl implements AnswerService {
         if(answer.getStatus()==EditStatus.ONSHOW&&answerDTO.getStatus()==EditStatus.DRAFT){
             throw new MyException(QuestionErrorEnum.ANSWER_UPLOAD_STATUS_ERROR);
         }
+        //草稿变为发布需要加1
+        if(answer.getStatus()==EditStatus.DRAFT&&answerDTO.getStatus()==EditStatus.ONSHOW)
+            questionMapper.addAnswerCounts(answer.getQuestionId());
         answer.setContent(answerDTO.getContent());
         answer.setStatus(answerDTO.getStatus());
         answer.setId(answerDTO.getAnswerId());
@@ -253,6 +257,7 @@ public class AnswerServiceImpl implements AnswerService {
 //        commentDTO.setFromUid(userId);
         //开始构造
         String toUid = "";
+        String parentId = commentDTO.getId();//先设置为id，若是第二种评论则会修改为对应的评论id
         //commentDTO的id字段在对应type下的表中查询不到对应的数据
         if(commentDTO.getType()>4||commentDTO.getType()<1){
             throw new MyException(QuestionErrorEnum.COMMENT_TYPE_OOR);
@@ -281,13 +286,21 @@ public class AnswerServiceImpl implements AnswerService {
             if(comment==null){
                 throw new MyException(QuestionErrorEnum.COMMENT_FOR_NOT_FOUND);
             }
+            if((comment=commentMapper.selectByPrimaryKey(comment.getParentId()))!=null){
+                //说明他是评论二级评论，parent_id对应的是commentid的id
+                parentId = comment.getId();
+            }else {
+                //说明他是评论一级评论，parent_id对应的是answerid,最好articleMapper查以下
+                parentId = comment.getParentId();
+            }
+
             toUid = commentDTO.getToUid();
         }
         //通过各项检测,可以插入到数据库中
         Comment comment = new Comment();
         comment.setId(IdUtils.getNewId());
         comment.setParentType(commentDTO.getType());
-        comment.setParentId(commentDTO.getId());
+        comment.setParentId(parentId);
         comment.setFromUid(userId);
         comment.setToUid(toUid);
         comment.setContent(commentDTO.getContent());
@@ -412,6 +425,7 @@ public class AnswerServiceImpl implements AnswerService {
             throw new MyException(QuestionErrorEnum.ANSWER_ID_NULL);
         AnswerVO answerVO = answerMapper.selectAnswerVOById(answerId);
 
+        List<CommentVO> commentVOList = commentMapper.selectCommentsVOByAnswerId(answerId);
 
         if(!token.equals("noToken")){
             String openid = redisService.findOpenidByToken(token);
@@ -421,12 +435,19 @@ public class AnswerServiceImpl implements AnswerService {
             hasZan = likeAnswerMapper.countAnswerZan(userId, answerId) != 0;
             hasCollect = collectAnswerMapper.countAnswerCollect(userId,answerId)!=0;
             hasFollow = userFanMapper.countIfFollow(userId,answerVO.getUserId())!=0;
+
+            //设置每个评论是否点过赞
+            for(CommentVO commentVO:commentVOList){
+                commentVO.setHasZan(likeAnswerMapper.countCommentZan(userId, commentVO.getId()) != 0);
+                for(SubCommentVO subCommentVO:commentVO.getSubComments()){
+                    subCommentVO.setHasZan(likeAnswerMapper.countCommentZan(userId,subCommentVO.getId())!=0);
+                }
+            }
         }
 
-        List<CommentVO> commentVO = commentMapper.selectCommentsVOByAnswerId(answerId);
         QuestionVO questionVO = questionMapper.selectVOByPrimaryKey(answerVO.getQuestionId());
         redisService.addQuestionPopu(answerVO.getQuestionId());
-        return new AnswerDetailVO(questionVO,answerVO,commentVO,hasZan,hasCollect,hasFollow);
+        return new AnswerDetailVO(questionVO,answerVO,commentVOList,hasZan,hasCollect,hasFollow);
 
     }
 

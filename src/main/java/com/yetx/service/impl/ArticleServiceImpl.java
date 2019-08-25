@@ -64,25 +64,32 @@ public class ArticleServiceImpl implements ArticleService {
         if(StringUtils.isEmpty(articleId))
             throw new MyException(ArticleErrorEnum.ARTICLEID_NULL);
         ArticleVO articleVO = articleMapper.selectVOByArticleId(articleId);
-
+        ArticleDetailVO articleDetailVO = new ArticleDetailVO(articleVO);
+        List<CommentVO> commentVOList = commentMapper.selectCommentsvoByArticleId(articleId);
+        //如果不是已登录用户
         if(!token.equals("noToken")){
             String openid = redisService.findOpenidByToken(token);
             if(StringUtils.isEmpty(openid))
                 throw new MyException(AuthErrorEnum.TOKEN_NOT_FIND);
             String userId = userMapper.selectUserIdByOpenId(openid);
             hasZan = likeArticleMapper.countArticleZan(userId, articleId) != 0;
-            //TODO 未来可以加入hasCollect
-            //hasCollect = collectArticleMapper.countArticleCollect(userId,articleId)!=0;
+            //hasCollect = collectArticleMapper.countArticleCollect(userId,articleId)!=0;//TODO 未来可以加入hasCollect
             hasCollect = false;
             hasFollow = userFanMapper.countIfFollow(userId,articleVO.getUserId())!=0;
+            //设置每个评论是否点过赞
+            for(CommentVO commentVO:commentVOList){
+                commentVO.setHasZan(likeArticleMapper.countCommentZan(userId, commentVO.getId()) != 0);
+                for(SubCommentVO subCommentVO:commentVO.getSubComments()){
+                    subCommentVO.setHasZan(likeArticleMapper.countCommentZan(userId,subCommentVO.getId())!=0);
+                }
+            }
         }
 
-        ArticleDetailVO articleDetailVO = new ArticleDetailVO(articleVO);
-        List<CommentVO> commentVO = commentMapper.selectCommentsvoByArticleId(articleId);
-        articleDetailVO.setComments(commentVO);
+        articleDetailVO.setComments(commentVOList);
         articleDetailVO.setHasCollect(hasCollect);
         articleDetailVO.setHasZan(hasZan);
         articleDetailVO.setHasFollow(hasFollow);
+
         return articleDetailVO;
     }
 
@@ -303,6 +310,7 @@ public class ArticleServiceImpl implements ArticleService {
     public String commentArticle(String token, CommentDTO articleComment) {
         String openid = redisService.findOpenidByToken(token);
         String userId = userMapper.selectUserIdByOpenId(openid);
+        String parentId = "";
         if(StringUtils.isEmpty(userId))
             throw new MyException(UserErrorEnum.TOKEN_NOT_FIND);
         //简单判断是否合法
@@ -316,17 +324,31 @@ public class ArticleServiceImpl implements ArticleService {
         String articleCommentId = UUID.randomUUID().toString().replace("-","");
         String toUid = "";
         if(articleComment.getType()== CommentType.ARTICLE_COM){//直接评论文章
+            //找出该文章
             Article article = articleMapper.selectByPrimaryKey(articleComment.getId());
             if(article==null)
                 throw new MyException(QuestionErrorEnum.COMMENT_TYPE_ID_NOTMATCH);
+            //设置被评论者id,因为这里前端不传，查article
             toUid = article.getUserId();
+            parentId = article.getId();
         }
         else if(articleComment.getType()==CommentType.ARTICLE_SUB_COM){//评论 评论
+            //找出这条评论
             Comment comment2 = commentMapper.selectByPrimaryKey(articleComment.getId());
             if(comment2==null)
                 throw new MyException(QuestionErrorEnum.COMMENT_TYPE_ID_NOTMATCH);
             if(StringUtils.isEmpty(articleComment.getToUid()))//TODO:最好验证这个toUid是否真实存在
                 throw new MyException(QuestionErrorEnum.COMMENT_TOUID_NOT_FOUNT);
+
+            if((comment2=commentMapper.selectByPrimaryKey(comment2.getParentId()))!=null){
+                //说明他是评论二级评论，parent_id对应的是commentid的id
+                parentId = comment2.getId();
+            }else {
+                //说明他是评论一级评论，parent_id对应的是answerid,最好articleMapper查以下
+                parentId = comment2.getParentId();
+            }
+
+            //设置被评论者id
             toUid = articleComment.getToUid();
         }
         Comment comment = new Comment();
@@ -336,7 +358,7 @@ public class ArticleServiceImpl implements ArticleService {
         comment.setContent(articleComment.getContent());
         comment.setFromUid(userId);
         comment.setToUid(toUid);
-        comment.setParentId(articleComment.getId());
+        comment.setParentId(parentId);
         commentMapper.insert(comment);
         return articleCommentId;
     }

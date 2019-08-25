@@ -21,6 +21,8 @@ public class CommentVO {
 
     private String content;
 
+    private Boolean hasZan=false;
+
     private List<SubCommentVO> subComments;
 
     public CommentVO() {
@@ -33,10 +35,20 @@ public class CommentVO {
                 ", fromUid='" + fromUid + '\'' +
                 ", likeCounts=" + likeCounts +
                 ", fromNickname='" + fromNickname + '\'' +
+                ", fromAvatar='" + fromAvatar + '\'' +
                 ", createTime=" + createTime +
                 ", content='" + content + '\'' +
+                ", hasZan=" + hasZan +
                 ", subComments=" + subComments +
                 '}';
+    }
+
+    public Boolean getHasZan() {
+        return hasZan;
+    }
+
+    public void setHasZan(Boolean hasZan) {
+        this.hasZan = hasZan;
     }
 
     public String getFromNickname() {

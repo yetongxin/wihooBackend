@@ -27,3 +27,7 @@ HELP.md
 
 ### VS Code ###
 .vscode/
+
+
+/src/main/resources/application-dev.properties
+/src/main/resources/application-test.properties

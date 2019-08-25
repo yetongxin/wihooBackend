@@ -22,6 +22,8 @@ public class SubCommentVO {
 
     private String content;
 
+    private boolean hasZan = false;
+
     public SubCommentVO() {
     }
 
@@ -95,5 +97,13 @@ public class SubCommentVO {
 
     public void setFromAvatar(String fromAvatar) {
         this.fromAvatar = fromAvatar;
+    }
+
+    public boolean isHasZan() {
+        return hasZan;
+    }
+
+    public void setHasZan(boolean hasZan) {
+        this.hasZan = hasZan;
     }
 }

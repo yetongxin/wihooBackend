@@ -82,7 +82,7 @@
     select a.id,a.user_id,a.title,a.cover,a.status,a.like_counts,a.collect_counts,a.content,a.create_time,u.nickname,u.avatar
     from article a left join user u on a.user_id=u.id
     where user_id=#{userId}
-  </select>
+  </select>vim
   <!-- 草稿只有一个 -->
   <select id="selectDraftByUserId" resultMap="DraftMap" parameterType="java.lang.String">
   select a.id,a.title,a.cover,a.content from article a
